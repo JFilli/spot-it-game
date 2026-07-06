@@ -531,6 +531,32 @@ body {
   text-align: left;
 }
 
+.rules-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 2rem - var(--safe-top) - var(--safe-bottom));
+}
+
+.rules-screen__card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: left;
+}
+
+.rules-screen__card h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.rules-screen__card .btn {
+  width: 100%;
+}
+
 .rules__intro {
   margin: 0 0 1rem;
   color: var(--text-muted);
@@ -550,10 +576,6 @@ body {
 
 .rules__list strong {
   color: var(--text);
-}
-
-.overlay__card--rules .btn {
-  margin-top: 0;
 }
 
 .play--waiting {

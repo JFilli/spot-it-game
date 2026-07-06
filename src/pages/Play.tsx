@@ -150,7 +150,23 @@ export function Play() {
     }
   }
 
-  if (!room || !round || !hydrated) {
+  if (!room || !hydrated) {
+    return (
+      <div className="page play">
+        <p>Loading game…</p>
+      </div>
+    )
+  }
+
+  if (showRules) {
+    return (
+      <div className="page play">
+        <GameRules onStart={startGame} />
+      </div>
+    )
+  }
+
+  if (!round) {
     return (
       <div className="page play">
         <p>Loading game…</p>
@@ -172,12 +188,10 @@ export function Play() {
 
       <RoundBoard
         round={round}
-        active={phase === 'playing' && timerRunning && !showRules}
+        active={phase === 'playing' && timerRunning}
         startTime={roundStartedAtRef.current}
         onComplete={handleRoundComplete}
       />
-
-      {showRules && <GameRules onStart={startGame} />}
 
       {phase === 'summary' && (
         <div className="overlay">

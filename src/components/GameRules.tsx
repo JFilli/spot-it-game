@@ -7,8 +7,8 @@ interface GameRulesProps {
 
 export function GameRules({ onStart }: GameRulesProps) {
   return (
-    <div className="overlay">
-      <div className="overlay__card overlay__card--rules">
+    <div className="rules-screen">
+      <div className="rules-screen__card">
         <h2>How to play</h2>
         <p className="rules__intro">Welcome to {APP_DISPLAY_NAME}</p>
         <ul className="rules__list">
