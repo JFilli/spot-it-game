@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { generateRound } from '../game/cardEngine'
 import { PRACTICE_CODE } from '../game/practice'
+import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
 import { Timer } from '../components/Timer'
@@ -51,7 +52,9 @@ export function Play() {
       if (roundIndex + 1 >= TOTAL_ROUNDS) {
         await submitTimes(newTimes)
         if (code === PRACTICE_CODE) {
-          navigate('/')
+          const total = newTimes.reduce((sum, t) => sum + t, 0)
+          recordSoloFinish(total)
+          navigate('/', { state: { screen: 'solo' } })
         } else {
           navigate(`/lobby/${code}`)
         }

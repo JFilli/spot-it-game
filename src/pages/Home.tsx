@@ -1,30 +1,53 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { PRACTICE_CODE, startPracticeSession } from '../game/practice'
-import { PreviousLobbies } from '../components/PreviousLobbies'
+import { getSoloBestTimes } from '../game/soloScores'
 import { OnlineStatus } from '../components/OnlineStatus'
+import { formatTime } from '../hooks/useRoundTimer'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 
-type Screen = 'name' | 'menu' | 'create' | 'join'
+type Screen = 'name' | 'mode' | 'solo'
+
+const RANK_LABELS = ['1st', '2nd', '3rd']
 
 export function Home() {
   const navigate = useNavigate()
-  const { createRoom, joinRoom } = useGameRoom(undefined)
+  const location = useLocation()
+  const { createRoom } = useGameRoom(undefined)
   const [name, setName] = useState(loadSavedName)
-  const [joinCode, setJoinCode] = useState('')
-  const [screen, setScreen] = useState<Screen>(loadSavedName() ? 'menu' : 'name')
+  const [screen, setScreen] = useState<Screen>(loadSavedName() ? 'mode' : 'name')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [soloBests, setSoloBests] = useState(getSoloBestTimes)
+
+  useEffect(() => {
+    const nextScreen = (location.state as { screen?: Screen } | null)?.screen
+    if (nextScreen === 'solo') {
+      setSoloBests(getSoloBestTimes())
+      setScreen('solo')
+      navigate('.', { replace: true, state: null })
+    }
+  }, [location.state, navigate])
 
   const handleContinue = () => {
     if (!name.trim()) return
     savePlayerName(name.trim())
     setError(null)
-    setScreen('menu')
+    setScreen('mode')
   }
 
-  const handleCreate = async () => {
+  const openSolo = () => {
+    setSoloBests(getSoloBestTimes())
+    setScreen('solo')
+  }
+
+  const startPractice = () => {
+    const query = startPracticeSession(name.trim())
+    navigate(`/play/${PRACTICE_CODE}${query}`)
+  }
+
+  const handleMultiplayer = async () => {
     setBusy(true)
     setError(null)
     try {
@@ -35,25 +58,6 @@ export function Home() {
     } finally {
       setBusy(false)
     }
-  }
-
-  const handleJoin = async () => {
-    if (!joinCode.trim()) return
-    setBusy(true)
-    setError(null)
-    try {
-      await joinRoom(joinCode.trim(), name.trim())
-      navigate(`/lobby/${joinCode.trim().toUpperCase()}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join game')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const startPractice = () => {
-    const query = startPracticeSession(name.trim())
-    navigate(`/play/${PRACTICE_CODE}${query}`)
   }
 
   return (
@@ -84,61 +88,47 @@ export function Home() {
         </div>
       )}
 
-      {screen === 'menu' && (
-        <div className="home__menu">
+      {screen === 'mode' && (
+        <div className="home__mode">
           <p className="home__greeting">
             Hi, <strong>{name}</strong>
             <button type="button" className="home__change-name" onClick={() => setScreen('name')}>
               Change
             </button>
           </p>
-          <button type="button" className="btn btn--primary" onClick={() => setScreen('create')}>
-            Create Game
+          <h2 className="home__mode-question">Solo or Multiplayer?</h2>
+          <button type="button" className="btn btn--primary" onClick={openSolo}>
+            Solo
           </button>
-          <button type="button" className="btn btn--secondary" onClick={() => setScreen('join')}>
-            Join Game
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={startPractice}>
-            Practice Solo
+          <button type="button" className="btn btn--secondary" disabled={busy} onClick={handleMultiplayer}>
+            {busy ? 'Creating…' : 'Multiplayer'}
           </button>
           <OnlineStatus />
-          <PreviousLobbies showEmpty />
         </div>
       )}
 
-      {screen === 'create' && (
-        <div className="home__form">
-          <h2>Create Game</h2>
-          <p>Playing as <strong>{name}</strong></p>
-          <button type="button" className="btn btn--primary" disabled={busy} onClick={handleCreate}>
-            {busy ? 'Creating…' : 'Get Game Code'}
+      {screen === 'solo' && (
+        <div className="home__solo">
+          <button type="button" className="back-button" onClick={() => setScreen('mode')}>
+            ← Back
           </button>
-          <button type="button" className="btn btn--ghost" onClick={() => setScreen('menu')}>
-            Back
-          </button>
-        </div>
-      )}
-
-      {screen === 'join' && (
-        <div className="home__form">
-          <h2>Join Game</h2>
-          <p>Playing as <strong>{name}</strong></p>
-          <label className="field">
-            Game code
-            <input
-              type="text"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="ABC123"
-              maxLength={6}
-              autoFocus
-            />
-          </label>
-          <button type="button" className="btn btn--primary" disabled={busy || joinCode.length < 4} onClick={handleJoin}>
-            {busy ? 'Joining…' : 'Join'}
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={() => setScreen('menu')}>
-            Back
+          <h2>Solo</h2>
+          <section className="solo-bests">
+            <h3 className="solo-bests__title">Personal Bests</h3>
+            <ol className="solo-bests__list">
+              {RANK_LABELS.map((label, index) => {
+                const time = soloBests[index]
+                return (
+                  <li key={label} className={`solo-bests__item${time !== undefined ? '' : ' solo-bests__item--empty'}`}>
+                    <span className="solo-bests__rank">{label}</span>
+                    <span className="solo-bests__time">{time !== undefined ? formatTime(time) : '—'}</span>
+                  </li>
+                )
+              })}
+            </ol>
+          </section>
+          <button type="button" className="btn btn--primary" onClick={startPractice}>
+            Start New Game
           </button>
         </div>
       )}

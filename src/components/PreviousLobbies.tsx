@@ -38,7 +38,7 @@ export function PreviousLobbies({ currentCode, showEmpty = false }: PreviousLobb
                 className="previous-lobbies__item"
                 onClick={() => handleOpen(entry.code, entry.playerName)}
               >
-                <span className="previous-lobbies__code">{entry.code}</span>
+                <span className="previous-lobbies__code">Multiplayer game</span>
                 <span className="previous-lobbies__meta">
                   Your time: {formatTime(entry.yourTimeMs)}
                   {' · '}

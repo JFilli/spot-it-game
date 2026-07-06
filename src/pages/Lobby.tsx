@@ -7,14 +7,15 @@ import { finishedPlayers, playingPlayers, totalTime } from '../game/room'
 import { formatTime } from '../hooks/useRoundTimer'
 import { MAX_PLAYERS } from '../game/types'
 import { isSupabaseConfigured } from '../lib/supabase'
-import { shareLobby } from '../lib/share'
-import { loadSavedName } from '../lib/playerName'
+import { copyInviteLink } from '../lib/share'
+import { loadSavedName, savePlayerName } from '../lib/playerName'
 
 export function Lobby() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
   const { room, playerId, currentPlayer, loading, error, joinRoom } = useGameRoom(code)
   const [shareFeedback, setShareFeedback] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
   const [joinName, setJoinName] = useState(loadSavedName())
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
@@ -24,6 +25,7 @@ export function Lobby() {
     setJoining(true)
     setJoinError(null)
     try {
+      savePlayerName(joinName.trim())
       await joinRoom(code, joinName.trim())
     } catch (err) {
       setJoinError(err instanceof Error ? err.message : 'Could not join')
@@ -32,13 +34,16 @@ export function Lobby() {
     }
   }
 
-  const handleShare = async () => {
+  const handleCopyLink = async () => {
     if (!room) return
     const url = `${window.location.origin}/join/${room.code}`
-    const result = await shareLobby(room.code, url)
-    if (result === 'shared') setShareFeedback('Shared!')
-    else if (result === 'copied') setShareFeedback('Copied to clipboard!')
-    else setShareFeedback(null)
+    const copied = await copyInviteLink(url)
+    if (copied) {
+      setLinkCopied(true)
+      setShareFeedback('Link copied!')
+    } else {
+      setShareFeedback('Could not copy — try again')
+    }
     setTimeout(() => setShareFeedback(null), 2500)
   }
 
@@ -69,13 +74,10 @@ export function Lobby() {
   if (!playerId) {
     return (
       <div className="page lobby">
-        <BackButton label="Title Screen" />
         <h1>Join Game</h1>
-        <div className="lobby__code">
-          <span className="lobby__code-label">Game Code</span>
-          <span className="lobby__code-value">{room.code}</span>
-        </div>
-        <p className="lobby__waiting">{room.players.length} player{room.players.length === 1 ? '' : 's'} in this lobby</p>
+        <p className="lobby__waiting">
+          {room.players.length} player{room.players.length === 1 ? '' : 's'} in this game
+        </p>
         <label className="field">
           Your name
           <input
@@ -85,10 +87,11 @@ export function Lobby() {
             placeholder="Enter your name"
             maxLength={20}
             autoFocus
+            onKeyDown={(e) => e.key === 'Enter' && joinName.trim() && handleJoinLobby()}
           />
         </label>
         <button type="button" className="btn btn--primary" disabled={joining || !joinName.trim()} onClick={handleJoinLobby}>
-          {joining ? 'Joining…' : 'Join Lobby'}
+          {joining ? 'Joining…' : 'Join Game'}
         </button>
         {joinError && <p className="error">{joinError}</p>}
       </div>
@@ -101,6 +104,9 @@ export function Lobby() {
   const ranked = finishedPlayers(room)
   const stillPlaying = playingPlayers(room)
   const leader = ranked[0]
+  const isHostAlone = playerCount === 1
+  const mustCopyFirst = isHostAlone && !linkCopied
+  const canBegin = !alreadyFinished && !mustCopyFirst
 
   return (
     <div className="page lobby">
@@ -117,18 +123,16 @@ export function Lobby() {
         {playerCount} / {MAX_PLAYERS} players
       </p>
 
-      <div className="lobby__code">
-        <span className="lobby__code-label">Game Code</span>
-        <span className="lobby__code-value">{room.code}</span>
-      </div>
-
       <div className="lobby__share">
-        <p>Challenge friends — share this link:</p>
+        <p>Invite friends with this link:</p>
         <code className="lobby__link">{shareUrl}</code>
-        <button type="button" className="btn btn--secondary" onClick={handleShare}>
-          Share Game Link
+        <button type="button" className="btn btn--secondary" onClick={handleCopyLink}>
+          Copy Invite Link
         </button>
         {shareFeedback && <p className="lobby__share-feedback">{shareFeedback}</p>}
+        {mustCopyFirst && (
+          <p className="lobby__copy-hint">Copy the link above to unlock Begin Game</p>
+        )}
       </div>
 
       {ranked.length > 0 && (
@@ -201,8 +205,13 @@ export function Lobby() {
       )}
 
       {!alreadyFinished && (
-        <button type="button" className="btn btn--primary" onClick={() => navigate(`/play/${code}`)}>
-          Start Playing
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={!canBegin}
+          onClick={() => navigate(`/play/${code}`)}
+        >
+          Begin Game
         </button>
       )}
 

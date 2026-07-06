@@ -1,19 +1,24 @@
-export async function shareLobby(code: string, url: string): Promise<'shared' | 'copied' | 'failed'> {
-  const text = `Join my Spot It game!\nCode: ${code}\n${url}`
+export async function copyInviteLink(url: string): Promise<boolean> {
+  const text = `Join my Spot It game!\n${url}`
 
   if (navigator.share) {
     try {
       await navigator.share({ title: 'Spot It', text, url })
-      return 'shared'
+      return true
     } catch (err) {
-      if ((err as Error).name === 'AbortError') return 'failed'
+      if ((err as Error).name === 'AbortError') return false
     }
   }
 
   try {
-    await navigator.clipboard.writeText(text)
-    return 'copied'
+    await navigator.clipboard.writeText(url)
+    return true
   } catch {
-    return 'failed'
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      return false
+    }
   }
 }
