@@ -4,6 +4,10 @@ import type { GameRoom } from './types'
 
 export const PRACTICE_CODE = 'PRACTICE'
 
+export function isPracticeCode(code: string): boolean {
+  return code.toUpperCase() === PRACTICE_CODE
+}
+
 export function createPracticeRoom(playerName: string): GameRoom {
   return {
     code: PRACTICE_CODE,

@@ -7,6 +7,7 @@ import { createLobbyPlayer,
   normalizeRoom,
 } from '../game/room'
 import { recordLobbyFinish } from '../game/lobbyHistory'
+import { isPracticeCode } from '../game/practice'
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
 import type { GameRoom } from '../game/types'
 import { MAX_PLAYERS } from '../game/types'
@@ -65,7 +66,7 @@ export function useGameRoom(code: string | undefined) {
 
   const fetchRoom = useCallback(async () => {
     if (!code) return null
-    if (!isSupabaseConfigured) {
+    if (isPracticeCode(code) || !isSupabaseConfigured) {
       return loadLocalRoom(code)
     }
     const { data, error: fetchError } = await supabase!
@@ -104,7 +105,7 @@ export function useGameRoom(code: string | undefined) {
   useEffect(() => {
     if (!code) return
 
-    if (!isSupabaseConfigured) {
+    if (isPracticeCode(code) || !isSupabaseConfigured) {
       const interval = setInterval(() => {
         const data = loadLocalRoom(code)
         if (data) setRoom(data)
@@ -244,7 +245,7 @@ export function useGameRoom(code: string | undefined) {
       if (!code || !playerId) return
       const upper = code.toUpperCase()
 
-      if (!isSupabaseConfigured) {
+      if (isPracticeCode(upper) || !isSupabaseConfigured) {
         const roomData = loadLocalRoom(upper)
         if (!roomData) return
         const player = findPlayer(roomData, playerId)
@@ -253,7 +254,9 @@ export function useGameRoom(code: string | undefined) {
         player.done = true
         saveLocalRoom(roomData)
         setRoom({ ...roomData, players: [...roomData.players] })
-        recordLobbyFinish(upper, player.name, times, roomData.players.length)
+        if (!isPracticeCode(upper)) {
+          recordLobbyFinish(upper, player.name, times, roomData.players.length)
+        }
         return
       }
 
