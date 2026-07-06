@@ -1,5 +1,5 @@
 import type { GameRoom, LobbyPlayer } from './types'
-import { MAX_PLAYERS } from './types'
+import { MAX_PLAYERS, TOTAL_ROUNDS } from './types'
 
 export function createLobbyPlayer(name: string): LobbyPlayer {
   return {
@@ -29,8 +29,9 @@ export function isRoomFull(room: GameRoom): boolean {
 
 export function finishedPlayers(room: GameRoom): LobbyPlayer[] {
   return room.players
-    .filter((p) => p.done && p.times)
+    .filter((p) => p.done && p.times && p.times.length >= TOTAL_ROUNDS)
     .sort((a, b) => (totalTime(a.times) ?? Infinity) - (totalTime(b.times) ?? Infinity))
+    .slice(0, MAX_PLAYERS)
 }
 
 export function playingPlayers(room: GameRoom): LobbyPlayer[] {
