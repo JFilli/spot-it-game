@@ -37,13 +37,20 @@ function pickUnique(count: number, rng: () => number): string[] {
   return pool.slice(0, count)
 }
 
+function randomScale(rng: () => number): number {
+  const tier = rng()
+  if (tier < 0.22) return 0.42 + rng() * 0.22
+  if (tier < 0.58) return 0.72 + rng() * 0.38
+  return 1.05 + rng() * 0.55
+}
+
 function buildCard(symbolIds: string[], rng: () => number): CardData {
   const slots = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8], rng)
   const placements: SymbolPlacement[] = symbolIds.map((symbolId, index) => ({
     symbolId,
     slot: slots[index],
     rotation: Math.floor(rng() * 360),
-    scale: 0.4 + rng() * 0.5,
+    scale: randomScale(rng),
   }))
   return { placements }
 }

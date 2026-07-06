@@ -388,11 +388,13 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .game-card__cell {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
@@ -427,10 +429,11 @@ body {
 
 .game-card__symbol {
   display: block;
-  font-size: clamp(1.5rem, 8vw, 2.5rem);
+  font-size: clamp(2.25rem, 11vw, 3.5rem);
   line-height: 1;
   user-select: none;
   pointer-events: none;
+  transform-origin: center center;
 }
 
 .overlay {
