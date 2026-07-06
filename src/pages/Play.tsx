@@ -6,6 +6,7 @@ import { PRACTICE_CODE } from '../game/practice'
 import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
+import { GameRules } from '../components/GameRules'
 import { Timer } from '../components/Timer'
 import { formatTime } from '../hooks/useRoundTimer'
 import { useGameRoom } from '../hooks/useGameRoom'
@@ -24,6 +25,7 @@ export function Play() {
   const [elapsed, setElapsed] = useState(0)
   const [timerRunning, setTimerRunning] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [showRules, setShowRules] = useState(false)
   const roundStartedAtRef = useRef(Date.now())
   const initializedRef = useRef(false)
 
@@ -57,24 +59,33 @@ export function Play() {
       setLastRoundTime(saved.lastRoundTime)
       roundStartedAtRef.current = saved.roundStartedAt
       setTimerRunning(saved.phase === 'playing')
+      setShowRules(false)
       if (saved.phase === 'playing') {
         setElapsed(Date.now() - saved.roundStartedAt)
       }
     } else {
-      const now = Date.now()
-      roundStartedAtRef.current = now
-      setTimerRunning(true)
-      savePlayProgress(code, playerId, {
-        roundIndex: 0,
-        times: [],
-        phase: 'playing',
-        roundStartedAt: now,
-        lastRoundTime: 0,
-      })
+      setShowRules(true)
+      setTimerRunning(false)
     }
 
     setHydrated(true)
   }, [code, playerId, room, loading, currentPlayer, navigate])
+
+  const startGame = () => {
+    if (!code || !playerId) return
+    const now = Date.now()
+    roundStartedAtRef.current = now
+    setElapsed(0)
+    setTimerRunning(true)
+    setShowRules(false)
+    savePlayProgress(code, playerId, {
+      roundIndex: 0,
+      times: [],
+      phase: 'playing',
+      roundStartedAt: now,
+      lastRoundTime: 0,
+    })
+  }
 
   useEffect(() => {
     if (!timerRunning || !hydrated) return
@@ -161,10 +172,12 @@ export function Play() {
 
       <RoundBoard
         round={round}
-        active={phase === 'playing' && timerRunning}
+        active={phase === 'playing' && timerRunning && !showRules}
         startTime={roundStartedAtRef.current}
         onComplete={handleRoundComplete}
       />
+
+      {showRules && <GameRules onStart={startGame} />}
 
       {phase === 'summary' && (
         <div className="overlay">
