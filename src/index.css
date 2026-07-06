@@ -211,6 +211,13 @@ body {
   font-style: italic;
 }
 
+.lobby__preview-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--accent-2);
+  line-height: 1.4;
+}
+
 .home__hint {
   font-size: 0.85rem;
   color: var(--text-muted);

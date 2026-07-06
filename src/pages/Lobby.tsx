@@ -8,7 +8,7 @@ import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
-import { joinUrl } from '../lib/brand'
+import { joinUrl, isVercelPreviewUrl, publicGameUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import type { LobbyPlayer } from '../game/types'
 
@@ -103,6 +103,7 @@ export function Lobby() {
   }
 
   const shareUrl = joinUrl(room.code)
+  const onPreviewUrl = isVercelPreviewUrl(window.location.origin)
   const hasCompleted = currentPlayer ? hasCompletedGame(currentPlayer) : false
   const hasQuit = Boolean(currentPlayer?.quit)
   const ranked = finishedPlayers(room)
@@ -122,6 +123,11 @@ export function Lobby() {
 
       <div className="lobby__share">
         <p>Invite friends with this link:</p>
+        {onPreviewUrl && (
+          <p className="lobby__preview-note">
+            Share link below uses your public game URL ({publicGameUrl()}), not this preview page.
+          </p>
+        )}
         <code className="lobby__link">{shareUrl}</code>
         <button type="button" className="btn btn--secondary" onClick={handleCopyLink}>
           Copy Invite Link
