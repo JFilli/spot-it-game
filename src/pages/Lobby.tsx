@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
-import { PreviousLobbies } from '../components/PreviousLobbies'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { finishedPlayers, playingPlayers, totalTime } from '../game/room'
 import { formatTime } from '../hooks/useRoundTimer'
@@ -214,8 +213,6 @@ export function Lobby() {
           Begin Game
         </button>
       )}
-
-      <PreviousLobbies currentCode={code} />
     </div>
   )
 }

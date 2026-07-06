@@ -6,7 +6,6 @@ import { createLobbyPlayer,
   isRoomFull,
   normalizeRoom,
 } from '../game/room'
-import { recordLobbyFinish } from '../game/lobbyHistory'
 import { isPracticeCode } from '../game/practice'
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
 import type { GameRoom } from '../game/types'
@@ -254,9 +253,6 @@ export function useGameRoom(code: string | undefined) {
         player.done = true
         saveLocalRoom(roomData)
         setRoom({ ...roomData, players: [...roomData.players] })
-        if (!isPracticeCode(upper)) {
-          recordLobbyFinish(upper, player.name, times, roomData.players.length)
-        }
         return
       }
 
@@ -276,10 +272,6 @@ export function useGameRoom(code: string | undefined) {
       if (updateError) throw updateError
       const updated = normalizeRoom(data as Record<string, unknown>)
       setRoom(updated)
-      const player = updated?.players.find((p) => p.id === playerId)
-      if (updated && player) {
-        recordLobbyFinish(upper, player.name, times, updated.players.length)
-      }
     },
     [supabase, code, playerId, fetchRoom],
   )
