@@ -3,10 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { finishedPlayers, totalTime } from '../game/room'
+import { generateRound } from '../game/cardEngine'
+import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
+import type { LobbyPlayer } from '../game/types'
+
+function roundMatchEmoji(seed: string, roundIndex: number): string {
+  const round = generateRound(seed, roundIndex)
+  return getSymbol(round.matchSymbol).emoji
+}
 
 export function Lobby() {
   const { code } = useParams<{ code: string }>()
@@ -16,6 +24,12 @@ export function Lobby() {
   const [joinName, setJoinName] = useState(loadSavedName())
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
+  const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null)
+
+  const togglePlayerBreakdown = (player: LobbyPlayer) => {
+    if (!player.times?.length) return
+    setExpandedPlayerId((current) => (current === player.id ? null : player.id))
+  }
 
   const handleJoinLobby = async () => {
     if (!code || !joinName.trim()) return
@@ -115,24 +129,46 @@ export function Lobby() {
       {ranked.length > 0 && (
         <section className="lobby__standings">
           <h2 className="lobby__standings-title">Leaderboard</h2>
+          <p className="lobby__standings-hint">Tap a name to see round-by-round times</p>
           <ol className="lobby__standings-list">
             {ranked.map((player, index) => {
               const playerTotal = totalTime(player.times)
               const isYou = player.id === playerId
               const isFirst = index === 0
+              const isExpanded = expandedPlayerId === player.id
               return (
                 <li
                   key={player.id}
-                  className={`lobby__standing${isYou ? ' lobby__standing--you' : ''}${isFirst ? ' lobby__standing--first' : ''}`}
+                  className={`lobby__standing-item${isYou ? ' lobby__standing-item--you' : ''}${isFirst ? ' lobby__standing-item--first' : ''}${isExpanded ? ' lobby__standing-item--expanded' : ''}`}
                 >
-                  <span className="lobby__standing-rank">{index + 1}</span>
-                  <span className="lobby__standing-name">
-                    {player.name}
-                    {isYou && <span className="lobby__you">You</span>}
-                  </span>
-                  <span className="lobby__standing-time">
-                    {playerTotal !== null ? formatTime(playerTotal) : '—'}
-                  </span>
+                  <div className="lobby__standing">
+                    <span className="lobby__standing-rank">{index + 1}</span>
+                    <button
+                      type="button"
+                      className="lobby__standing-name"
+                      onClick={() => togglePlayerBreakdown(player)}
+                      aria-expanded={isExpanded}
+                    >
+                      {player.name}
+                      {isYou && <span className="lobby__you">You</span>}
+                    </button>
+                    <span className="lobby__standing-time">
+                      {playerTotal !== null ? formatTime(playerTotal) : '—'}
+                    </span>
+                  </div>
+                  {isExpanded && player.times && (
+                    <ul className="lobby__standing-breakdown">
+                      {player.times.map((timeMs, roundIndex) => (
+                        <li key={roundIndex}>
+                          <span className="lobby__round-emoji" aria-hidden>
+                            {roundMatchEmoji(room.seed, roundIndex)}
+                          </span>
+                          <span className="lobby__round-label">Round {roundIndex + 1}</span>
+                          <span className="lobby__round-time">{formatTime(timeMs)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               )
             })}
@@ -143,19 +179,6 @@ export function Lobby() {
             </p>
           )}
         </section>
-      )}
-
-      {alreadyFinished && currentPlayer?.times && (
-        <div className="lobby__your-rounds">
-          <h3>Your round times</h3>
-          <ul>
-            {currentPlayer.times.map((t, i) => (
-              <li key={i}>
-                Round {i + 1}: {formatTime(t)}
-              </li>
-            ))}
-          </ul>
-        </div>
       )}
 
       {!alreadyFinished && (
