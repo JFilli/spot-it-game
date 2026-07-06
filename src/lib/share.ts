@@ -1,9 +1,11 @@
+import { APP_NAME } from './brand'
+
 export async function copyInviteLink(url: string): Promise<boolean> {
-  const text = `Join my Spot It game!\n${url}`
+  const text = `Join my ${APP_NAME} game!\n${url}`
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Spot It', text, url })
+      await navigator.share({ title: APP_NAME, text, url })
       return true
     } catch (err) {
       if ((err as Error).name === 'AbortError') return false

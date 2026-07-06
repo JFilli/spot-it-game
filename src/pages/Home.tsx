@@ -6,6 +6,7 @@ import { getSoloBestTimes } from '../game/soloScores'
 import { OnlineStatus } from '../components/OnlineStatus'
 import { formatTime } from '../hooks/useRoundTimer'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
+import { APP_DISPLAY_NAME } from '../lib/brand'
 
 type Screen = 'name' | 'mode' | 'solo'
 
@@ -63,7 +64,7 @@ export function Home() {
   return (
     <div className="page home">
       <header className="home__hero">
-        <h1>Spot It</h1>
+        <h1>{APP_DISPLAY_NAME}</h1>
         <p>Find the matching symbol on both cards. Lowest total time wins!</p>
       </header>
 

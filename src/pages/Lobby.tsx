@@ -8,6 +8,7 @@ import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
+import { joinUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import type { LobbyPlayer } from '../game/types'
 
@@ -47,7 +48,7 @@ export function Lobby() {
 
   const handleCopyLink = async () => {
     if (!room) return
-    const url = `${window.location.origin}/join/${room.code}`
+    const url = joinUrl(room.code)
     const copied = await copyInviteLink(url)
     setShareFeedback(copied ? 'Link copied!' : 'Could not copy — try again')
     setTimeout(() => setShareFeedback(null), 2500)
@@ -101,7 +102,7 @@ export function Lobby() {
     )
   }
 
-  const shareUrl = `${window.location.origin}/join/${room.code}`
+  const shareUrl = joinUrl(room.code)
   const alreadyFinished = currentPlayer?.done ?? false
   const ranked = finishedPlayers(room)
   const leader = ranked[0]

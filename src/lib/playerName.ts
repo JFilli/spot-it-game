@@ -1,10 +1,11 @@
-const NAME_KEY = 'spot-it-player-name'
+import { storageKeys, readStorage, writeStorage } from './storage'
 
 export function loadSavedName(): string {
   try {
-    const saved = localStorage.getItem(NAME_KEY)
+    const saved = readStorage(storageKeys.playerName)
     if (saved) return saved
-    const raw = localStorage.getItem('spot-it-session')
+
+    const raw = readStorage(storageKeys.session)
     if (!raw) return ''
     const session = JSON.parse(raw) as { playerName?: string }
     return session.playerName ?? ''
@@ -14,5 +15,5 @@ export function loadSavedName(): string {
 }
 
 export function savePlayerName(name: string) {
-  localStorage.setItem(NAME_KEY, name)
+  writeStorage(storageKeys.playerName, name)
 }

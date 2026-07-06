@@ -8,10 +8,9 @@ import { createLobbyPlayer,
 } from '../game/room'
 import { isPracticeCode } from '../game/practice'
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
+import { storageKeys, readStorage, writeStorage, removeStorage } from '../lib/storage'
 import type { GameRoom } from '../game/types'
 import { MAX_PLAYERS } from '../game/types'
-
-const STORAGE_KEY = 'spot-it-session'
 
 interface StoredSession {
   code: string
@@ -21,7 +20,7 @@ interface StoredSession {
 
 function loadSession(): StoredSession | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = readStorage(storageKeys.session)
     if (!raw) return null
     const session = JSON.parse(raw) as StoredSession & { playerSlot?: number }
     if (session.playerId) return session as StoredSession
@@ -32,12 +31,12 @@ function loadSession(): StoredSession | null {
 }
 
 function saveSession(session: StoredSession) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+  writeStorage(storageKeys.session, JSON.stringify(session))
 }
 
 function loadLocalRoom(code: string): GameRoom | null {
   try {
-    const raw = localStorage.getItem(`spot-it-room-${code.toUpperCase()}`)
+    const raw = readStorage(storageKeys.room(code))
     if (!raw) return null
     return normalizeRoom(JSON.parse(raw) as Record<string, unknown>)
   } catch {
@@ -46,11 +45,11 @@ function loadLocalRoom(code: string): GameRoom | null {
 }
 
 function saveLocalRoom(room: GameRoom) {
-  localStorage.setItem(`spot-it-room-${room.code}`, JSON.stringify(room))
+  writeStorage(storageKeys.room(room.code), JSON.stringify(room))
 }
 
 export function clearSession() {
-  localStorage.removeItem(STORAGE_KEY)
+  removeStorage(storageKeys.session)
 }
 
 export function useGameRoom(code: string | undefined) {

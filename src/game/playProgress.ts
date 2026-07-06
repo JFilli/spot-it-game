@@ -1,3 +1,5 @@
+import { storageKeys, readStorage, writeStorage, removeStorage } from '../lib/storage'
+
 export interface PlayProgress {
   roundIndex: number
   times: number[]
@@ -7,12 +9,12 @@ export interface PlayProgress {
 }
 
 function storageKey(code: string, playerId: string): string {
-  return `spot-it-play-${code.toUpperCase()}-${playerId}`
+  return storageKeys.play(code, playerId)
 }
 
 export function loadPlayProgress(code: string, playerId: string): PlayProgress | null {
   try {
-    const raw = localStorage.getItem(storageKey(code, playerId))
+    const raw = readStorage(storageKey(code, playerId))
     if (!raw) return null
     return JSON.parse(raw) as PlayProgress
   } catch {
@@ -21,9 +23,9 @@ export function loadPlayProgress(code: string, playerId: string): PlayProgress |
 }
 
 export function savePlayProgress(code: string, playerId: string, progress: PlayProgress): void {
-  localStorage.setItem(storageKey(code, playerId), JSON.stringify(progress))
+  writeStorage(storageKey(code, playerId), JSON.stringify(progress))
 }
 
 export function clearPlayProgress(code: string, playerId: string): void {
-  localStorage.removeItem(storageKey(code, playerId))
+  removeStorage(storageKey(code, playerId))
 }
