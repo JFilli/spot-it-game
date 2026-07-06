@@ -1,0 +1,88 @@
+export interface SymbolDef {
+  id: string
+  label: string
+  emoji: string
+}
+
+export const SYMBOLS: SymbolDef[] = [
+  { id: 'cat', label: 'Cat', emoji: '🐱' },
+  { id: 'dog', label: 'Dog', emoji: '🐶' },
+  { id: 'fox', label: 'Fox', emoji: '🦊' },
+  { id: 'bear', label: 'Bear', emoji: '🐻' },
+  { id: 'panda', label: 'Panda', emoji: '🐼' },
+  { id: 'lion', label: 'Lion', emoji: '🦁' },
+  { id: 'tiger', label: 'Tiger', emoji: '🐯' },
+  { id: 'rabbit', label: 'Rabbit', emoji: '🐰' },
+  { id: 'mouse', label: 'Mouse', emoji: '🐭' },
+  { id: 'frog', label: 'Frog', emoji: '🐸' },
+  { id: 'monkey', label: 'Monkey', emoji: '🐵' },
+  { id: 'chicken', label: 'Chicken', emoji: '🐔' },
+  { id: 'penguin', label: 'Penguin', emoji: '🐧' },
+  { id: 'owl', label: 'Owl', emoji: '🦉' },
+  { id: 'bee', label: 'Bee', emoji: '🐝' },
+  { id: 'butterfly', label: 'Butterfly', emoji: '🦋' },
+  { id: 'snail', label: 'Snail', emoji: '🐌' },
+  { id: 'turtle', label: 'Turtle', emoji: '🐢' },
+  { id: 'snake', label: 'Snake', emoji: '🐍' },
+  { id: 'dragon', label: 'Dragon', emoji: '🐉' },
+  { id: 'unicorn', label: 'Unicorn', emoji: '🦄' },
+  { id: 'fish', label: 'Fish', emoji: '🐟' },
+  { id: 'whale', label: 'Whale', emoji: '🐳' },
+  { id: 'octopus', label: 'Octopus', emoji: '🐙' },
+  { id: 'crab', label: 'Crab', emoji: '🦀' },
+  { id: 'star', label: 'Star', emoji: '⭐' },
+  { id: 'moon', label: 'Moon', emoji: '🌙' },
+  { id: 'sun', label: 'Sun', emoji: '☀️' },
+  { id: 'cloud', label: 'Cloud', emoji: '☁️' },
+  { id: 'rainbow', label: 'Rainbow', emoji: '🌈' },
+  { id: 'fire', label: 'Fire', emoji: '🔥' },
+  { id: 'snowflake', label: 'Snowflake', emoji: '❄️' },
+  { id: 'lightning', label: 'Lightning', emoji: '⚡' },
+  { id: 'heart', label: 'Heart', emoji: '❤️' },
+  { id: 'diamond', label: 'Diamond', emoji: '💎' },
+  { id: 'clover', label: 'Clover', emoji: '🍀' },
+  { id: 'mushroom', label: 'Mushroom', emoji: '🍄' },
+  { id: 'apple', label: 'Apple', emoji: '🍎' },
+  { id: 'banana', label: 'Banana', emoji: '🍌' },
+  { id: 'grape', label: 'Grape', emoji: '🍇' },
+  { id: 'watermelon', label: 'Watermelon', emoji: '🍉' },
+  { id: 'pizza', label: 'Pizza', emoji: '🍕' },
+  { id: 'burger', label: 'Burger', emoji: '🍔' },
+  { id: 'cake', label: 'Cake', emoji: '🎂' },
+  { id: 'cookie', label: 'Cookie', emoji: '🍪' },
+  { id: 'car', label: 'Car', emoji: '🚗' },
+  { id: 'rocket', label: 'Rocket', emoji: '🚀' },
+  { id: 'airplane', label: 'Airplane', emoji: '✈️' },
+  { id: 'bike', label: 'Bike', emoji: '🚲' },
+  { id: 'train', label: 'Train', emoji: '🚂' },
+  { id: 'ball', label: 'Ball', emoji: '⚽' },
+  { id: 'basketball', label: 'Basketball', emoji: '🏀' },
+  { id: 'football', label: 'Football', emoji: '🏈' },
+  { id: 'tennis', label: 'Tennis', emoji: '🎾' },
+  { id: 'guitar', label: 'Guitar', emoji: '🎸' },
+  { id: 'piano', label: 'Piano', emoji: '🎹' },
+  { id: 'drum', label: 'Drum', emoji: '🥁' },
+  { id: 'bell', label: 'Bell', emoji: '🔔' },
+  { id: 'key', label: 'Key', emoji: '🔑' },
+  { id: 'hammer', label: 'Hammer', emoji: '🔨' },
+  { id: 'scissors', label: 'Scissors', emoji: '✂️' },
+  { id: 'umbrella', label: 'Umbrella', emoji: '☂️' },
+  { id: 'glasses', label: 'Glasses', emoji: '👓' },
+  { id: 'crown', label: 'Crown', emoji: '👑' },
+  { id: 'ghost', label: 'Ghost', emoji: '👻' },
+  { id: 'alien', label: 'Alien', emoji: '👽' },
+  { id: 'robot', label: 'Robot', emoji: '🤖' },
+  { id: 'tree', label: 'Tree', emoji: '🌲' },
+  { id: 'flower', label: 'Flower', emoji: '🌸' },
+  { id: 'cactus', label: 'Cactus', emoji: '🌵' },
+  { id: 'anchor', label: 'Anchor', emoji: '⚓' },
+  { id: 'globe', label: 'Globe', emoji: '🌍' },
+]
+
+const symbolMap = new Map(SYMBOLS.map((s) => [s.id, s]))
+
+export function getSymbol(id: string): SymbolDef {
+  const symbol = symbolMap.get(id)
+  if (!symbol) throw new Error(`Unknown symbol: ${id}`)
+  return symbol
+}
