@@ -4,8 +4,10 @@ import { Lobby } from './pages/Lobby'
 import { PlayRoute } from './pages/PlayRoute'
 
 function JoinRedirect() {
-  const code = window.location.pathname.split('/join/')[1]
-  return <Navigate to={`/lobby/${code}`} replace />
+  const { code } = useParams<{ code: string }>()
+  if (!code) return <Navigate to="/" replace />
+  const cleanCode = code.split('?')[0].split('/')[0].toUpperCase()
+  return <Navigate to={`/lobby/${cleanCode}`} replace />
 }
 
 function ResultsRedirect() {
