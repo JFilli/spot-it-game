@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { generateRound } from '../game/cardEngine'
+import { clearPlayProgress, loadPlayProgress, savePlayProgress } from '../game/playProgress'
 import { PRACTICE_CODE } from '../game/practice'
 import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
@@ -14,15 +15,17 @@ type Phase = 'playing' | 'summary'
 export function Play() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
-  const { room, playerName, submitTimes } = useGameRoom(code)
+  const { room, playerId, playerName, currentPlayer, loading, submitTimes } = useGameRoom(code)
 
   const [roundIndex, setRoundIndex] = useState(0)
   const [times, setTimes] = useState<number[]>([])
   const [phase, setPhase] = useState<Phase>('playing')
   const [lastRoundTime, setLastRoundTime] = useState(0)
   const [elapsed, setElapsed] = useState(0)
-  const [timerRunning, setTimerRunning] = useState(true)
-  const startTimeRef = useRef(performance.now())
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+  const roundStartedAtRef = useRef(Date.now())
+  const initializedRef = useRef(false)
 
   const round = useMemo(() => {
     if (!room?.seed) return null
@@ -32,15 +35,57 @@ export function Play() {
   const totalSoFar = times.reduce((sum, t) => sum + t, 0)
 
   useEffect(() => {
-    if (!timerRunning) return
+    if (!code || !playerId || !room || loading) return
+    if (initializedRef.current) return
+    initializedRef.current = true
+
+    if (currentPlayer?.done) {
+      clearPlayProgress(code, playerId)
+      if (code === PRACTICE_CODE) {
+        navigate('/', { state: { screen: 'solo' } })
+      } else {
+        navigate(`/lobby/${code}`)
+      }
+      return
+    }
+
+    const saved = loadPlayProgress(code, playerId)
+    if (saved) {
+      setRoundIndex(saved.roundIndex)
+      setTimes(saved.times)
+      setPhase(saved.phase)
+      setLastRoundTime(saved.lastRoundTime)
+      roundStartedAtRef.current = saved.roundStartedAt
+      setTimerRunning(saved.phase === 'playing')
+      if (saved.phase === 'playing') {
+        setElapsed(Date.now() - saved.roundStartedAt)
+      }
+    } else {
+      const now = Date.now()
+      roundStartedAtRef.current = now
+      setTimerRunning(true)
+      savePlayProgress(code, playerId, {
+        roundIndex: 0,
+        times: [],
+        phase: 'playing',
+        roundStartedAt: now,
+        lastRoundTime: 0,
+      })
+    }
+
+    setHydrated(true)
+  }, [code, playerId, room, loading, currentPlayer, navigate])
+
+  useEffect(() => {
+    if (!timerRunning || !hydrated) return
     let frame: number
     const tick = () => {
-      setElapsed(performance.now() - startTimeRef.current)
+      setElapsed(Date.now() - roundStartedAtRef.current)
       frame = requestAnimationFrame(tick)
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [timerRunning, roundIndex])
+  }, [timerRunning, hydrated, roundIndex])
 
   const handleRoundComplete = useCallback(
     async (timeMs: number) => {
@@ -50,6 +95,7 @@ export function Play() {
       setTimes(newTimes)
 
       if (roundIndex + 1 >= TOTAL_ROUNDS) {
+        if (code && playerId) clearPlayProgress(code, playerId)
         await submitTimes(newTimes)
         if (code === PRACTICE_CODE) {
           const total = newTimes.reduce((sum, t) => sum + t, 0)
@@ -60,20 +106,40 @@ export function Play() {
         }
       } else {
         setPhase('summary')
+        if (code && playerId) {
+          savePlayProgress(code, playerId, {
+            roundIndex,
+            times: newTimes,
+            phase: 'summary',
+            roundStartedAt: roundStartedAtRef.current,
+            lastRoundTime: timeMs,
+          })
+        }
       }
     },
-    [times, roundIndex, submitTimes, navigate, code],
+    [times, roundIndex, submitTimes, navigate, code, playerId],
   )
 
   const nextRound = () => {
-    setRoundIndex((i) => i + 1)
-    startTimeRef.current = performance.now()
+    const nextIndex = roundIndex + 1
+    const now = Date.now()
+    roundStartedAtRef.current = now
+    setRoundIndex(nextIndex)
     setElapsed(0)
     setTimerRunning(true)
     setPhase('playing')
+    if (code && playerId) {
+      savePlayProgress(code, playerId, {
+        roundIndex: nextIndex,
+        times,
+        phase: 'playing',
+        roundStartedAt: now,
+        lastRoundTime,
+      })
+    }
   }
 
-  if (!room || !round) {
+  if (!room || !round || !hydrated) {
     return (
       <div className="page play">
         <p>Loading game…</p>
@@ -96,7 +162,7 @@ export function Play() {
       <RoundBoard
         round={round}
         active={phase === 'playing' && timerRunning}
-        startTime={startTimeRef.current}
+        startTime={roundStartedAtRef.current}
         onComplete={handleRoundComplete}
       />
 

@@ -126,7 +126,7 @@ export function Lobby() {
         {shareFeedback && <p className="lobby__share-feedback">{shareFeedback}</p>}
       </div>
 
-      {ranked.length > 0 && (
+      {alreadyFinished && ranked.length > 0 && (
         <section className="lobby__standings">
           <h2 className="lobby__standings-title">Leaderboard</h2>
           <p className="lobby__standings-hint">Tap a name to see round-by-round times</p>

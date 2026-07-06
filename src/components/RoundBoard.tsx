@@ -57,7 +57,7 @@ export function RoundBoard({ round, onComplete, active, startTime }: RoundBoardP
 
     if (isCorrect) {
       setCompleted(true)
-      onComplete(performance.now() - startTime)
+      onComplete(Date.now() - startTime)
       return
     }
 
