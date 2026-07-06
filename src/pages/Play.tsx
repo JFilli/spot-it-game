@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { generateRound } from '../game/cardEngine'
 import { clearPlayProgress, loadPlayProgress, savePlayProgress } from '../game/playProgress'
-import { PRACTICE_CODE } from '../game/practice'
+import { PRACTICE_CODE, isPracticeCode } from '../game/practice'
 import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
@@ -16,7 +16,8 @@ type Phase = 'playing' | 'summary'
 export function Play() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
-  const { room, playerId, playerName, currentPlayer, loading, submitTimes } = useGameRoom(code)
+  const isSolo = code ? isPracticeCode(code) : false
+  const { room, playerId, playerName, currentPlayer, loading, submitTimes, quitGame } = useGameRoom(code)
 
   const [roundIndex, setRoundIndex] = useState(0)
   const [times, setTimes] = useState<number[]>([])
@@ -26,6 +27,7 @@ export function Play() {
   const [timerRunning, setTimerRunning] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [showRules, setShowRules] = useState(false)
+  const [quitting, setQuitting] = useState(false)
   const roundStartedAtRef = useRef(Date.now())
   const initializedRef = useRef(false)
 
@@ -36,12 +38,28 @@ export function Play() {
 
   const totalSoFar = times.reduce((sum, t) => sum + t, 0)
 
+  const handleQuit = useCallback(async () => {
+    if (!code || !playerId || quitting) return
+    setQuitting(true)
+    try {
+      if (isSolo) {
+        clearPlayProgress(code, playerId)
+        navigate('/', { state: { screen: 'solo' } })
+        return
+      }
+      await quitGame()
+      navigate(`/lobby/${code}`)
+    } finally {
+      setQuitting(false)
+    }
+  }, [code, playerId, quitting, isSolo, quitGame, navigate])
+
   useEffect(() => {
     if (!code || !playerId || !room || loading) return
     if (initializedRef.current) return
     initializedRef.current = true
 
-    if (currentPlayer?.done) {
+    if (currentPlayer?.done || currentPlayer?.quit) {
       clearPlayProgress(code, playerId)
       if (code === PRACTICE_CODE) {
         navigate('/', { state: { screen: 'solo' } })
@@ -161,7 +179,7 @@ export function Play() {
   if (showRules) {
     return (
       <div className="page play">
-        <GameRules onStart={startGame} />
+        <GameRules onStart={startGame} onQuit={handleQuit} quitting={quitting} />
       </div>
     )
   }
@@ -193,6 +211,15 @@ export function Play() {
         onComplete={handleRoundComplete}
       />
 
+      <button
+        type="button"
+        className="btn btn--ghost play__quit"
+        disabled={quitting}
+        onClick={handleQuit}
+      >
+        {quitting ? 'Quitting…' : 'Quit Game'}
+      </button>
+
       {phase === 'summary' && (
         <div className="overlay">
           <div className="overlay__card">
@@ -201,6 +228,9 @@ export function Play() {
             <p>Running total: <strong>{formatTime(totalSoFar)}</strong></p>
             <button type="button" className="btn btn--primary" onClick={nextRound}>
               Next Round
+            </button>
+            <button type="button" className="btn btn--ghost" disabled={quitting} onClick={handleQuit}>
+              Quit Game
             </button>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { useGameRoom } from '../hooks/useGameRoom'
-import { finishedPlayers, totalTime } from '../game/room'
+import { finishedPlayers, quitPlayers, hasCompletedGame, totalTime } from '../game/room'
 import { generateRound } from '../game/cardEngine'
 import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
@@ -103,8 +103,10 @@ export function Lobby() {
   }
 
   const shareUrl = joinUrl(room.code)
-  const alreadyFinished = currentPlayer?.done ?? false
+  const hasCompleted = currentPlayer ? hasCompletedGame(currentPlayer) : false
+  const hasQuit = Boolean(currentPlayer?.quit)
   const ranked = finishedPlayers(room)
+  const quitters = quitPlayers(room)
   const leader = ranked[0]
 
   return (
@@ -127,7 +129,7 @@ export function Lobby() {
         {shareFeedback && <p className="lobby__share-feedback">{shareFeedback}</p>}
       </div>
 
-      {alreadyFinished && ranked.length > 0 && (
+      {hasCompleted && (ranked.length > 0 || quitters.length > 0) && (
         <section className="lobby__standings">
           <h2 className="lobby__standings-title">Leaderboard</h2>
           <p className="lobby__standings-hint">Tap a name to see round-by-round times</p>
@@ -173,6 +175,24 @@ export function Lobby() {
                 </li>
               )
             })}
+            {quitters.map((player) => {
+              const isYou = player.id === playerId
+              return (
+                <li
+                  key={player.id}
+                  className={`lobby__standing-item lobby__standing-item--quit${isYou ? ' lobby__standing-item--you' : ''}`}
+                >
+                  <div className="lobby__standing">
+                    <span className="lobby__standing-rank">—</span>
+                    <span className="lobby__standing-name lobby__standing-name--static">
+                      {player.name}
+                      {isYou && <span className="lobby__you">You</span>}
+                    </span>
+                    <span className="lobby__standing-quit">Quit</span>
+                  </div>
+                </li>
+              )
+            })}
           </ol>
           {leader && ranked.length > 1 && (
             <p className="lobby__leader-note">
@@ -182,7 +202,11 @@ export function Lobby() {
         </section>
       )}
 
-      {!alreadyFinished && (
+      {hasQuit && (
+        <p className="lobby__quit-note">You quit this game.</p>
+      )}
+
+      {!hasCompleted && !hasQuit && (
         <>
           <p className="lobby__waiting">Share the link — friends can join and play on their own time.</p>
           <button type="button" className="btn btn--primary" onClick={() => navigate(`/play/${code}`)}>

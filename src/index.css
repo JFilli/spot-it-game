@@ -526,6 +526,10 @@ body {
   margin-top: 0;
 }
 
+.overlay__card .btn + .btn {
+  margin-top: 0.5rem;
+}
+
 .overlay__card--rules {
   max-width: 360px;
   text-align: left;
@@ -555,6 +559,41 @@ body {
 
 .rules-screen__card .btn {
   width: 100%;
+}
+
+.rules-screen__card .btn + .btn {
+  margin-top: 0.5rem;
+}
+
+.play__quit {
+  margin-top: 1rem;
+}
+
+.lobby__standing-name--static {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.lobby__standing-item--quit {
+  opacity: 0.85;
+  border-left: 4px solid var(--accent);
+}
+
+.lobby__standing-quit {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lobby__quit-note {
+  text-align: center;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
 }
 
 .rules__intro {

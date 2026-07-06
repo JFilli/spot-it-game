@@ -20,6 +20,7 @@ export interface LobbyPlayer {
   name: string
   times: number[] | null
   done: boolean
+  quit?: boolean
 }
 
 export interface GameRoom {

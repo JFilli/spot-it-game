@@ -6,6 +6,7 @@ import { createLobbyPlayer,
   isRoomFull,
   normalizeRoom,
 } from '../game/room'
+import { clearPlayProgress } from '../game/playProgress'
 import { isPracticeCode } from '../game/practice'
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
 import { storageKeys, readStorage, writeStorage, removeStorage } from '../lib/storage'
@@ -250,6 +251,7 @@ export function useGameRoom(code: string | undefined) {
         if (!player) return
         player.times = times
         player.done = true
+        player.quit = false
         saveLocalRoom(roomData)
         setRoom({ ...roomData, players: [...roomData.players] })
         return
@@ -258,7 +260,7 @@ export function useGameRoom(code: string | undefined) {
       const roomData = await fetchRoom()
       if (!roomData) return
       const updatedPlayers = roomData.players.map((p) =>
-        p.id === playerId ? { ...p, times, done: true } : p,
+        p.id === playerId ? { ...p, times, done: true, quit: false } : p,
       )
 
       const { data, error: updateError } = await supabase!
@@ -275,6 +277,44 @@ export function useGameRoom(code: string | undefined) {
     [supabase, code, playerId, fetchRoom],
   )
 
+  const quitGame = useCallback(async () => {
+    if (!code || !playerId) return
+    const upper = code.toUpperCase()
+    if (isPracticeCode(upper)) return
+
+    clearPlayProgress(upper, playerId)
+
+    if (!isSupabaseConfigured) {
+      const roomData = loadLocalRoom(upper)
+      if (!roomData) return
+      const player = findPlayer(roomData, playerId)
+      if (!player) return
+      player.quit = true
+      player.done = true
+      player.times = null
+      saveLocalRoom(roomData)
+      setRoom({ ...roomData, players: [...roomData.players] })
+      return
+    }
+
+    const roomData = await fetchRoom()
+    if (!roomData) return
+    const updatedPlayers = roomData.players.map((p) =>
+      p.id === playerId ? { ...p, quit: true, done: true, times: null } : p,
+    )
+
+    const { data, error: updateError } = await supabase!
+      .from('game_rooms')
+      .update({ players: updatedPlayers })
+      .eq('code', upper)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+    const updated = normalizeRoom(data as Record<string, unknown>)
+    setRoom(updated)
+  }, [supabase, code, playerId, fetchRoom])
+
   return {
     room,
     playerId,
@@ -285,6 +325,7 @@ export function useGameRoom(code: string | undefined) {
     createRoom,
     joinRoom,
     submitTimes,
+    quitGame,
     setPlayerName,
   }
 }

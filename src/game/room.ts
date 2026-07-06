@@ -7,6 +7,7 @@ export function createLobbyPlayer(name: string): LobbyPlayer {
     name,
     times: null,
     done: false,
+    quit: false,
   }
 }
 
@@ -29,9 +30,17 @@ export function isRoomFull(room: GameRoom): boolean {
 
 export function finishedPlayers(room: GameRoom): LobbyPlayer[] {
   return room.players
-    .filter((p) => p.done && p.times && p.times.length >= TOTAL_ROUNDS)
+    .filter((p) => p.done && !p.quit && p.times && p.times.length >= TOTAL_ROUNDS)
     .sort((a, b) => (totalTime(a.times) ?? Infinity) - (totalTime(b.times) ?? Infinity))
     .slice(0, MAX_PLAYERS)
+}
+
+export function quitPlayers(room: GameRoom): LobbyPlayer[] {
+  return room.players.filter((p) => p.quit)
+}
+
+export function hasCompletedGame(player: LobbyPlayer): boolean {
+  return Boolean(player.done && !player.quit && player.times && player.times.length >= TOTAL_ROUNDS)
 }
 
 export function playingPlayers(room: GameRoom): LobbyPlayer[] {
@@ -56,7 +65,11 @@ export function getPlayerRank(room: GameRoom, playerId: string): number | null {
 /** Migrate legacy two-player room format from localStorage */
 export function normalizeRoom(raw: Record<string, unknown>): GameRoom | null {
   if (Array.isArray(raw.players)) {
-    return raw as unknown as GameRoom
+    const players = (raw.players as LobbyPlayer[]).map((p) => ({
+      ...p,
+      quit: p.quit ?? false,
+    }))
+    return { ...(raw as unknown as GameRoom), players }
   }
 
   const code = raw.code as string
