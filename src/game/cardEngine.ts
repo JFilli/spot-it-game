@@ -38,11 +38,15 @@ function pickUnique(count: number, rng: () => number): string[] {
   return pool.slice(0, count)
 }
 
-function randomScale(rng: () => number): number {
+function randomScale(rng: () => number, gridSize: GridSize): number {
   const tier = rng()
-  if (tier < 0.22) return 0.42 + rng() * 0.22
-  if (tier < 0.58) return 0.72 + rng() * 0.38
-  return 1.05 + rng() * 0.55
+  let scale: number
+  if (tier < 0.22) scale = 0.42 + rng() * 0.22
+  else if (tier < 0.58) scale = 0.72 + rng() * 0.38
+  else scale = 1.05 + rng() * 0.55
+
+  const maxScale = gridSize >= 5 ? 1.12 : gridSize >= 4 ? 1.28 : 1.6
+  return Math.min(scale, maxScale)
 }
 
 function buildCard(symbolIds: string[], gridSize: GridSize, rng: () => number): CardData {
@@ -52,7 +56,7 @@ function buildCard(symbolIds: string[], gridSize: GridSize, rng: () => number): 
     symbolId,
     slot: slots[index],
     rotation: Math.floor(rng() * 360),
-    scale: randomScale(rng),
+    scale: randomScale(rng, gridSize),
   }))
   return { placements }
 }

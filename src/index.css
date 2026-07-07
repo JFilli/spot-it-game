@@ -561,18 +561,6 @@ body {
   .timer__value {
     font-size: 1rem;
   }
-
-  .game-card__symbol {
-    font-size: clamp(0.9rem, 3.6vh, 1.55rem);
-  }
-
-  .game-card--grid-4 .game-card__symbol {
-    font-size: clamp(0.75rem, 2.8vh, 1.25rem);
-  }
-
-  .game-card--grid-5 .game-card__symbol {
-    font-size: clamp(0.65rem, 2.2vh, 1rem);
-  }
 }
 
 .game-card {
@@ -605,17 +593,39 @@ body {
 
 .game-card__cell {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  container-type: size;
   border: none;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
   min-height: 0;
+  min-width: 0;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
+}
+
+.game-card__symbol-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.game-card__symbol {
+  display: block;
+  font-size: 56cqmin;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  transform-origin: center center;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .game-card__cell:active:not(:disabled) {
@@ -638,13 +648,12 @@ body {
   75% { transform: translateX(4px); }
 }
 
-.game-card__symbol {
-  display: block;
-  font-size: clamp(1.15rem, 7.5vw, 2.5rem);
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-  transform-origin: center center;
+.game-card--grid-4 .game-card__symbol {
+  font-size: 52cqmin;
+}
+
+.game-card--grid-5 .game-card__symbol {
+  font-size: 48cqmin;
 }
 
 @media (min-width: 600px) {
@@ -706,10 +715,6 @@ body {
   .game-card__cell {
     min-height: 48px;
     border-radius: 8px;
-  }
-
-  .game-card__symbol {
-    font-size: clamp(2.25rem, 11vw, 3.5rem);
   }
 }
 

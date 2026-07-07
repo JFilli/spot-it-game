@@ -42,13 +42,15 @@ export function GameCard({ card, gridSize, label, selectedSlot, wrongSlot, disab
               aria-label={placement ? getSymbol(placement.symbolId).label : 'Empty'}
             >
               {placement && (
-                <span
-                  className="game-card__symbol"
-                  style={{
-                    transform: `rotate(${placement.rotation}deg) scale(${placement.scale})`,
-                  }}
-                >
-                  {getSymbol(placement.symbolId).emoji}
+                <span className="game-card__symbol-stage">
+                  <span
+                    className="game-card__symbol"
+                    style={{
+                      transform: `rotate(${placement.rotation}deg) scale(${placement.scale})`,
+                    }}
+                  >
+                    {getSymbol(placement.symbolId).emoji}
+                  </span>
                 </span>
               )}
             </button>
