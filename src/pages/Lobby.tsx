@@ -5,7 +5,7 @@ import { useGameRoom } from '../hooks/useGameRoom'
 import { finishedPlayers, quitPlayers, hasCompletedGame, totalTime } from '../game/room'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
-import { copyInviteLink } from '../lib/share'
+import { canNativeShare, shareInviteLink } from '../lib/share'
 import { joinUrl, isVercelDeploymentUrl, publicGameUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import { gridSizeLabel } from '../game/types'
@@ -41,12 +41,20 @@ export function Lobby() {
     }
   }
 
-  const handleCopyLink = async () => {
+  const handleShareInvite = async () => {
     if (!room) return
     const url = joinUrl(room.code)
-    const copied = await copyInviteLink(url)
-    setShareFeedback(copied ? 'Link copied!' : 'Could not copy — try again')
-    setTimeout(() => setShareFeedback(null), 2500)
+    const result = await shareInviteLink(url)
+    if (result === 'shared') {
+      setShareFeedback('Invite sent!')
+    } else if (result === 'copied') {
+      setShareFeedback('Link copied!')
+    } else if (result === 'failed') {
+      setShareFeedback('Could not share — try again')
+    }
+    if (result !== 'cancelled') {
+      setTimeout(() => setShareFeedback(null), 2500)
+    }
   }
 
   if (loading) {
@@ -127,8 +135,8 @@ export function Lobby() {
           </p>
         )}
         <code className="lobby__link">{shareUrl}</code>
-        <button type="button" className="btn btn--secondary" onClick={handleCopyLink}>
-          Copy Invite Link
+        <button type="button" className="btn btn--secondary" onClick={handleShareInvite}>
+          {canNativeShare() ? 'Invite Friends' : 'Copy Invite Link'}
         </button>
         {shareFeedback && <p className="lobby__share-feedback">{shareFeedback}</p>}
       </div>

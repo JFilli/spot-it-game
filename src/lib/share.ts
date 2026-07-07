@@ -1,23 +1,35 @@
 import { APP_NAME } from './brand'
 
-export async function copyInviteLink(url: string): Promise<boolean> {
+export type ShareInviteResult = 'shared' | 'copied' | 'cancelled' | 'failed'
+
+export function canNativeShare(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+}
+
+export async function shareInviteLink(url: string): Promise<ShareInviteResult> {
+  const message = `Join my ${APP_NAME} game!`
+
+  if (canNativeShare()) {
+    try {
+      await navigator.share({ title: APP_NAME, text: message, url })
+      return 'shared'
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return 'cancelled'
+    }
+  }
+
+  const copied = await copyToClipboard(url)
+  return copied ? 'copied' : 'failed'
+}
+
+async function copyToClipboard(url: string): Promise<boolean> {
   const message = `Join my ${APP_NAME} game!\n${url}`
 
-  // Prefer clipboard — button says "Copy Invite Link"
   try {
     await navigator.clipboard.writeText(url)
     return true
   } catch {
-    // Clipboard can fail on some mobile browsers; try share sheet next
-  }
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: APP_NAME, text: message, url })
-      return true
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') return false
-    }
+    // fall through
   }
 
   try {
