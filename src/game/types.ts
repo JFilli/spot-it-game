@@ -30,7 +30,7 @@ export interface GameRoom {
   players: LobbyPlayer[]
 }
 
-export const TOTAL_ROUNDS = 5
+export const TOTAL_ROUNDS = 3
 export const MAX_PLAYERS = 10
 
 export const GRID_OPTIONS = [2, 3, 4, 5] as const
