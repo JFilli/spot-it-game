@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { fetchSoloLeaderboard, type SoloLeaderboardEntry } from '../game/soloLeaderboard'
@@ -22,6 +22,12 @@ export function SoloLeaderboard() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigationState = location.state as LeaderboardLocationState | null
+  const originRef = useRef({
+    from: navigationState?.from,
+    gridSize: navigationState?.gridSize ?? parseGridParam(searchParams.get('grid')),
+    pendingMode: navigationState?.pendingMode ?? null,
+  })
   const [gridSize, setGridSize] = useState<GridSize>(() => parseGridParam(searchParams.get('grid')))
   const [entries, setEntries] = useState<SoloLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,17 +59,17 @@ export function SoloLeaderboard() {
   }
 
   const goBack = () => {
-    const state = location.state as LeaderboardLocationState | null
-    if (state?.from === 'solo') {
-      navigate('/', { state: { screen: 'solo', gridSize: state.gridSize ?? gridSize } })
+    const origin = originRef.current
+    if (origin.from === 'solo') {
+      navigate('/', { state: { screen: 'solo', gridSize: origin.gridSize } })
       return
     }
-    if (state?.from === 'grid') {
-      navigate('/', { state: { screen: 'grid', pendingMode: state.pendingMode ?? null } })
+    if (origin.from === 'grid') {
+      navigate('/', { state: { screen: 'grid', pendingMode: origin.pendingMode } })
       return
     }
     if (searchParams.get('grid')) {
-      navigate('/', { state: { screen: 'solo', gridSize } })
+      navigate('/', { state: { screen: 'solo', gridSize: origin.gridSize } })
       return
     }
     navigate('/', { state: { screen: 'grid' } })
