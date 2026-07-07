@@ -8,6 +8,7 @@ export const storageKeys = {
   room: (code: string) => `${APP_SLUG}-room-${code.toUpperCase()}`,
   play: (code: string, playerId: string) => `${APP_SLUG}-play-${code.toUpperCase()}-${playerId}`,
   soloBests: `${APP_SLUG}-solo-bests`,
+  devicePlayerId: `${APP_SLUG}-device-player-id`,
 }
 
 function legacyKey(key: string): string {

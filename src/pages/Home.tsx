@@ -132,7 +132,16 @@ export function Home() {
           >
             ← Back
           </button>
-          <h2>Choose grid size</h2>
+          <div className="home__grid-header">
+            <h2>Choose grid size</h2>
+            <button
+              type="button"
+              className="btn btn--ghost home__leaderboard-btn"
+              onClick={() => navigate('/leaderboard')}
+            >
+              Leaderboard
+            </button>
+          </div>
           <p className="home__grid-hint">How many symbols per card?</p>
           <div className="grid-size-picker">
             {GRID_OPTIONS.map((size) => (
@@ -164,6 +173,13 @@ export function Home() {
             ← Back
           </button>
           <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
+          <button
+            type="button"
+            className="btn btn--ghost home__leaderboard-btn home__leaderboard-btn--solo"
+            onClick={() => navigate(`/leaderboard?grid=${selectedGridSize}`)}
+          >
+            Leaderboard
+          </button>
           <section className="solo-bests">
             <h3 className="solo-bests__title">Personal Best</h3>
             <p className={`solo-bests__best${soloBest === null ? ' solo-bests__best--empty' : ''}`}>

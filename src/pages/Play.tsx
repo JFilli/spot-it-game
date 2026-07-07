@@ -4,6 +4,7 @@ import { generateRound } from '../game/cardEngine'
 import { clearPlayProgress, loadPlayProgress, savePlayProgress } from '../game/playProgress'
 import { PRACTICE_CODE, isPracticeCode } from '../game/practice'
 import { recordSoloFinish } from '../game/soloScores'
+import { submitSoloLeaderboard } from '../game/soloLeaderboard'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
 import { GameRules } from '../components/GameRules'
@@ -162,6 +163,7 @@ export function Play() {
         if (code === PRACTICE_CODE) {
           const total = newTimes.reduce((sum, t) => sum + t, 0)
           recordSoloFinish(room?.gridSize ?? 3, total)
+          void submitSoloLeaderboard(room?.gridSize ?? 3, total, playerName)
         }
         setPhase('finished')
       } else {
@@ -177,7 +179,7 @@ export function Play() {
         }
       }
     },
-    [times, roundIndex, submitTimes, code, playerId, room?.gridSize],
+    [times, roundIndex, submitTimes, code, playerId, room?.gridSize, playerName],
   )
 
   const nextRound = () => {
