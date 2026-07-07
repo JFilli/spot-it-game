@@ -223,15 +223,6 @@ export function Play() {
         />
       </div>
 
-      <button
-        type="button"
-        className="btn btn--ghost play__quit"
-        disabled={quitting}
-        onClick={handleQuit}
-      >
-        {quitting ? 'Quitting…' : 'Quit Game'}
-      </button>
-
       {phase === 'summary' && (
         <div className="overlay">
           <div className="overlay__card">

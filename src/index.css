@@ -626,15 +626,6 @@ body {
   .game-card__symbol {
     font-size: clamp(2.25rem, 11vw, 3.5rem);
   }
-
-  .play__quit-header {
-    display: none;
-  }
-
-  .play__quit {
-    display: block;
-    margin-top: 1rem;
-  }
 }
 
 .overlay {
@@ -698,10 +689,6 @@ body {
 
 .rules-screen__card .btn + .btn {
   margin-top: 0.5rem;
-}
-
-.play__quit {
-  display: none;
 }
 
 .lobby__standing-name--static {
