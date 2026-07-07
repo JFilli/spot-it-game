@@ -25,10 +25,6 @@ export function findPlayer(room: GameRoom, playerId: string): LobbyPlayer | unde
   return room.players.find((p) => p.id === playerId)
 }
 
-export function findPlayerByName(room: GameRoom, name: string): LobbyPlayer | undefined {
-  return room.players.find((p) => p.name === name)
-}
-
 export function isRoomFull(room: GameRoom): boolean {
   return room.players.length >= MAX_PLAYERS
 }

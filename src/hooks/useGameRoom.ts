@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { generateGameSeed, generateRoomCode } from '../game/cardEngine'
 import { createLobbyPlayer,
   findPlayer,
-  findPlayerByName,
   isRoomFull,
   normalizeRoom,
 } from '../game/room'
@@ -174,48 +173,50 @@ export function useGameRoom(code: string | undefined) {
     async (joinCode: string, name: string) => {
       const upper = joinCode.toUpperCase()
 
-      const applyJoin = (roomData: GameRoom): StoredSession => {
-        const existing = findPlayerByName(roomData, name)
-        if (existing) {
-          return { code: upper, playerId: existing.id, playerName: name }
+      const loadRoomData = async (): Promise<GameRoom> => {
+        if (!isSupabaseConfigured) {
+          const roomData = loadLocalRoom(upper)
+          if (!roomData) throw new Error('Game not found')
+          return roomData
         }
+        const existing = await supabase!.from('game_rooms').select('*').eq('code', upper).maybeSingle()
+        if (existing.error) throw existing.error
+        if (!existing.data) throw new Error('Game not found')
+        const roomData = normalizeRoom(existing.data as Record<string, unknown>)
+        if (!roomData) throw new Error('Game not found')
+        return roomData
+      }
+
+      const session = loadSession()
+      if (session?.code === upper && session.playerId) {
+        const roomData = await loadRoomData()
+        const returning = findPlayer(roomData, session.playerId)
+        if (returning) {
+          saveSession(session)
+          setPlayerId(session.playerId)
+          setPlayerName(session.playerName)
+          setRoom(roomData)
+          return
+        }
+      }
+
+      if (!isSupabaseConfigured) {
+        const roomData = await loadRoomData()
         if (isRoomFull(roomData)) {
           throw new Error(`This lobby is full (${MAX_PLAYERS} players max)`)
         }
         const player = createLobbyPlayer(name)
         roomData.players.push(player)
-        return { code: upper, playerId: player.id, playerName: name }
-      }
-
-      if (!isSupabaseConfigured) {
-        const roomData = loadLocalRoom(upper)
-        if (!roomData) throw new Error('Game not found')
-        const session = applyJoin(roomData)
+        const newSession = { code: upper, playerId: player.id, playerName: name }
         saveLocalRoom(roomData)
-        saveSession(session)
-        setPlayerId(session.playerId)
+        saveSession(newSession)
+        setPlayerId(player.id)
         setPlayerName(name)
         setRoom({ ...roomData })
         return
       }
 
-      const existing = await supabase!.from('game_rooms').select('*').eq('code', upper).maybeSingle()
-      if (existing.error) throw existing.error
-      if (!existing.data) throw new Error('Game not found')
-
-      const roomData = normalizeRoom(existing.data as Record<string, unknown>)
-      if (!roomData) throw new Error('Game not found')
-
-      const existingPlayer = findPlayerByName(roomData, name)
-      if (existingPlayer) {
-        const session = { code: upper, playerId: existingPlayer.id, playerName: name }
-        saveSession(session)
-        setPlayerId(existingPlayer.id)
-        setPlayerName(name)
-        setRoom(roomData)
-        return
-      }
-
+      const roomData = await loadRoomData()
       if (isRoomFull(roomData)) {
         throw new Error(`This lobby is full (${MAX_PLAYERS} players max)`)
       }
@@ -230,8 +231,8 @@ export function useGameRoom(code: string | undefined) {
         .single()
 
       if (updateError) throw updateError
-      const session = { code: upper, playerId: player.id, playerName: name }
-      saveSession(session)
+      const newSession = { code: upper, playerId: player.id, playerName: name }
+      saveSession(newSession)
       setPlayerId(player.id)
       setPlayerName(name)
       setRoom(normalizeRoom(data as Record<string, unknown>))
