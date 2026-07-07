@@ -49,15 +49,58 @@ function randomScale(rng: () => number, gridSize: GridSize): number {
   return Math.min(scale, maxScale)
 }
 
+function rotatedBoundsFactor(rotationDeg: number): number {
+  const rad = (rotationDeg * Math.PI) / 180
+  return Math.abs(Math.cos(rad)) + Math.abs(Math.sin(rad))
+}
+
+function maxScaleForRotation(rotationDeg: number, gridSize: GridSize): number {
+  const padding = gridSize >= 5 ? 0.78 : gridSize >= 4 ? 0.84 : gridSize >= 3 ? 0.88 : 0.92
+  return padding / rotatedBoundsFactor(rotationDeg)
+}
+
+function choosePlacement(rng: () => number, gridSize: GridSize): { rotation: number; scale: number } {
+  const scale = randomScale(rng, gridSize)
+
+  for (let i = 0; i < 10; i++) {
+    const rotation = Math.floor(rng() * 360)
+    if (scale <= maxScaleForRotation(rotation, gridSize)) {
+      return { rotation, scale }
+    }
+  }
+
+  const orientations = Array.from({ length: 24 }, (_, index) => index * 15)
+  for (const rotation of shuffle(orientations, rng)) {
+    if (scale <= maxScaleForRotation(rotation, gridSize)) {
+      return { rotation, scale }
+    }
+  }
+
+  let bestRotation = 0
+  let bestFit = 0
+  for (const rotation of orientations) {
+    const fit = maxScaleForRotation(rotation, gridSize)
+    if (fit > bestFit) {
+      bestFit = fit
+      bestRotation = rotation
+    }
+  }
+
+  return { rotation: bestRotation, scale: Math.min(scale, bestFit) }
+}
+
 function buildCard(symbolIds: string[], gridSize: GridSize, rng: () => number): CardData {
   const cellCount = symbolsPerCard(gridSize)
   const slots = shuffle(Array.from({ length: cellCount }, (_, i) => i), rng)
-  const placements: SymbolPlacement[] = symbolIds.map((symbolId, index) => ({
-    symbolId,
-    slot: slots[index],
-    rotation: Math.floor(rng() * 360),
-    scale: randomScale(rng, gridSize),
-  }))
+  const placements: SymbolPlacement[] = symbolIds.map((symbolId, index) => {
+    const { rotation, scale } = choosePlacement(rng, gridSize)
+    return {
+      symbolId,
+      slot: slots[index],
+      rotation,
+      scale,
+    }
+  })
   return { placements }
 }
 

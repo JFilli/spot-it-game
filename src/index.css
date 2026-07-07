@@ -593,9 +593,9 @@ body {
 
 .game-card__cell {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   container-type: size;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
@@ -605,7 +605,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
 }
 
 .game-card__symbol-stage {
@@ -614,7 +615,6 @@ body {
   justify-content: center;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 .game-card__symbol {
@@ -634,7 +634,7 @@ body {
 
 .game-card__cell--selected {
   background: rgba(83, 192, 240, 0.25);
-  outline: 2px solid var(--accent-2);
+  border-color: var(--accent-2);
 }
 
 .game-card__cell--wrong {

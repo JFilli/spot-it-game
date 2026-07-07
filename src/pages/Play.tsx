@@ -262,9 +262,6 @@ export function Play() {
             <button type="button" className="btn btn--primary" onClick={nextRound}>
               Next Round
             </button>
-            <button type="button" className="btn btn--ghost" onClick={requestQuit}>
-              Quit
-            </button>
           </div>
         </div>
       )}
