@@ -40,6 +40,11 @@ export function Play() {
   }, [room?.seed, room?.gridSize, roundIndex])
 
   const totalSoFar = times.reduce((sum, t) => sum + t, 0)
+  const soloGridSize = room?.gridSize ?? 3
+
+  const goToSoloHub = useCallback(() => {
+    navigate('/', { state: { screen: 'solo', gridSize: soloGridSize } })
+  }, [navigate, soloGridSize])
 
   const confirmQuit = useCallback(async () => {
     if (!code || !playerId || quitting) return
@@ -47,7 +52,7 @@ export function Play() {
     try {
       if (isSolo) {
         clearPlayProgress(code, playerId)
-        navigate('/', { state: { screen: 'solo' } })
+        goToSoloHub()
         return
       }
       await quitGame()
@@ -56,7 +61,7 @@ export function Play() {
       setQuitting(false)
       setShowQuitConfirm(false)
     }
-  }, [code, playerId, quitting, isSolo, quitGame, navigate])
+  }, [code, playerId, quitting, isSolo, quitGame, navigate, goToSoloHub])
 
   const requestQuit = useCallback(() => {
     setShowQuitConfirm(true)
@@ -68,11 +73,11 @@ export function Play() {
       return
     }
     if (isSolo) {
-      navigate('/', { state: { screen: 'solo' } })
+      goToSoloHub()
     } else {
       navigate(`/lobby/${code}`)
     }
-  }, [code, isSolo, navigate])
+  }, [code, isSolo, navigate, goToSoloHub])
 
   useEffect(() => {
     if (!code || !playerId || !room || loading) return
@@ -82,7 +87,7 @@ export function Play() {
     if (currentPlayer?.done || currentPlayer?.quit) {
       clearPlayProgress(code, playerId)
       if (code === PRACTICE_CODE) {
-        navigate('/', { state: { screen: 'solo' } })
+        navigate('/', { state: { screen: 'solo', gridSize: room.gridSize } })
       } else {
         navigate(`/lobby/${code}`)
       }
@@ -137,12 +142,12 @@ export function Play() {
   }, [timerRunning, hydrated, roundIndex])
 
   const leaveAfterFinish = useCallback(() => {
-    if (code === PRACTICE_CODE) {
-      navigate('/', { state: { screen: 'solo', gridSize: room?.gridSize ?? 3 } })
+    if (isSolo) {
+      goToSoloHub()
     } else if (code) {
       navigate(`/lobby/${code}`)
     }
-  }, [code, navigate, room?.gridSize])
+  }, [isSolo, goToSoloHub, code, navigate])
 
   const handleRoundComplete = useCallback(
     async (timeMs: number) => {
