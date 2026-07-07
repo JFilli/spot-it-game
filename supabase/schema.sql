@@ -3,6 +3,7 @@
 create table if not exists game_rooms (
   code text primary key,
   seed text not null,
+  grid_size integer not null default 3,
   players jsonb not null default '[]',
   created_at timestamptz not null default now()
 );
@@ -23,6 +24,9 @@ create policy "Anyone can update game rooms"
 
 -- Enable realtime for live lobby updates
 alter publication supabase_realtime add table game_rooms;
+
+-- Migration: add grid size support (run in Supabase SQL editor if upgrading):
+-- alter table game_rooms add column if not exists grid_size integer not null default 3;
 
 -- Migration from old two-player schema (run if upgrading):
 -- alter table game_rooms add column if not exists players jsonb not null default '[]';

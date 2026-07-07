@@ -1,5 +1,10 @@
 import type { GameRoom, LobbyPlayer } from './types'
-import { MAX_PLAYERS, TOTAL_ROUNDS } from './types'
+import { GRID_OPTIONS, MAX_PLAYERS, TOTAL_ROUNDS, type GridSize } from './types'
+
+function parseGridSize(raw: unknown): GridSize {
+  const size = Number(raw)
+  return GRID_OPTIONS.includes(size as GridSize) ? (size as GridSize) : 3
+}
 
 export function createLobbyPlayer(name: string): LobbyPlayer {
   return {
@@ -69,7 +74,8 @@ export function normalizeRoom(raw: Record<string, unknown>): GameRoom | null {
       ...p,
       quit: p.quit ?? false,
     }))
-    return { ...(raw as unknown as GameRoom), players }
+    const gridSize = parseGridSize(raw.grid_size ?? raw.gridSize)
+    return { ...(raw as unknown as GameRoom), players, gridSize }
   }
 
   const code = raw.code as string
@@ -96,5 +102,5 @@ export function normalizeRoom(raw: Record<string, unknown>): GameRoom | null {
     })
   }
 
-  return { code, seed, players }
+  return { code, seed, gridSize: 3, players }
 }

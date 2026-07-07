@@ -10,10 +10,11 @@ import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
 import { joinUrl, isVercelDeploymentUrl, publicGameUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
-import type { LobbyPlayer } from '../game/types'
+import { gridSizeLabel } from '../game/types'
+import type { GridSize, LobbyPlayer } from '../game/types'
 
-function roundMatchEmoji(seed: string, roundIndex: number): string {
-  const round = generateRound(seed, roundIndex)
+function roundMatchEmoji(seed: string, roundIndex: number, gridSize: GridSize): string {
+  const round = generateRound(seed, roundIndex, gridSize)
   return getSymbol(round.matchSymbol).emoji
 }
 
@@ -121,6 +122,8 @@ export function Lobby() {
         </p>
       )}
 
+      <p className="lobby__grid-size">{gridSizeLabel(room.gridSize)} grid</p>
+
       <div className="lobby__share">
         <p>Invite friends with this link:</p>
         {onDeploymentUrl && (
@@ -170,7 +173,7 @@ export function Lobby() {
                       {player.times.map((timeMs, roundIndex) => (
                         <li key={roundIndex}>
                           <span className="lobby__round-emoji" aria-hidden>
-                            {roundMatchEmoji(room.seed, roundIndex)}
+                            {roundMatchEmoji(room.seed, roundIndex, room.gridSize)}
                           </span>
                           <span className="lobby__round-label">Round {roundIndex + 1}</span>
                           <span className="lobby__round-time">{formatTime(timeMs)}</span>

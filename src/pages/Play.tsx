@@ -35,8 +35,8 @@ export function Play() {
 
   const round = useMemo(() => {
     if (!room?.seed) return null
-    return generateRound(room.seed, roundIndex)
-  }, [room?.seed, roundIndex])
+    return generateRound(room.seed, roundIndex, room.gridSize)
+  }, [room?.seed, room?.gridSize, roundIndex])
 
   const totalSoFar = times.reduce((sum, t) => sum + t, 0)
 
@@ -147,8 +147,8 @@ export function Play() {
         await submitTimes(newTimes)
         if (code === PRACTICE_CODE) {
           const total = newTimes.reduce((sum, t) => sum + t, 0)
-          recordSoloFinish(total)
-          navigate('/', { state: { screen: 'solo' } })
+          recordSoloFinish(room?.gridSize ?? 3, total)
+          navigate('/', { state: { screen: 'solo', gridSize: room?.gridSize ?? 3 } })
         } else {
           navigate(`/lobby/${code}`)
         }
@@ -207,7 +207,7 @@ export function Play() {
   if (showRules) {
     return (
       <div className="page play">
-        <GameRules onStart={startGame} onReturn={returnFromRules} />
+        <GameRules gridSize={room.gridSize} onStart={startGame} onReturn={returnFromRules} />
         {quitConfirmDialog}
       </div>
     )
@@ -246,6 +246,7 @@ export function Play() {
       <div className="play__board-wrap">
         <RoundBoard
           round={round}
+          gridSize={room.gridSize}
           active={phase === 'playing' && timerRunning}
           startTime={roundStartedAtRef.current}
           onComplete={handleRoundComplete}

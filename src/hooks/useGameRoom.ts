@@ -10,7 +10,7 @@ import { clearPlayProgress } from '../game/playProgress'
 import { isPracticeCode } from '../game/practice'
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
 import { storageKeys, readStorage, writeStorage, removeStorage } from '../lib/storage'
-import type { GameRoom } from '../game/types'
+import type { GameRoom, GridSize } from '../game/types'
 import { MAX_PLAYERS } from '../game/types'
 
 interface StoredSession {
@@ -137,11 +137,11 @@ export function useGameRoom(code: string | undefined) {
   }, [code, supabase, fetchRoom])
 
   const createRoom = useCallback(
-    async (name: string) => {
+    async (name: string, gridSize: GridSize) => {
       const newCode = generateRoomCode()
       const seed = generateGameSeed()
       const host = createLobbyPlayer(name)
-      const newRoom: GameRoom = { code: newCode, seed, players: [host] }
+      const newRoom: GameRoom = { code: newCode, seed, gridSize, players: [host] }
 
       if (!isSupabaseConfigured) {
         saveLocalRoom(newRoom)
@@ -155,7 +155,7 @@ export function useGameRoom(code: string | undefined) {
 
       const { data, error: createError } = await supabase!
         .from('game_rooms')
-        .insert({ code: newCode, seed, players: newRoom.players })
+        .insert({ code: newCode, seed, grid_size: gridSize, players: newRoom.players })
         .select()
         .single()
 

@@ -138,13 +138,73 @@ body {
   margin: 0;
 }
 
-.home__menu,
+.home__grid-hint {
+  text-align: center;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
 .home__form,
+.home__grid,
 .home__mode,
 .home__solo {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.grid-size-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.grid-size-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.grid-size-picker__option:active:not(:disabled) {
+  opacity: 0.85;
+}
+
+.grid-size-picker__option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.grid-size-picker__label {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent-2);
+}
+
+.grid-size-picker__meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.lobby__grid-size {
+  text-align: center;
+  font-weight: 700;
+  color: var(--accent-2);
+  margin: 0 0 1rem;
+}
+
+.rules__grid-note {
+  text-align: center;
+  margin: 0 0 1rem;
+  font-weight: 600;
+  color: var(--accent-2);
 }
 
 .home__mode-question {
@@ -504,6 +564,14 @@ body {
 
   .game-card__symbol {
     font-size: clamp(0.9rem, 3.6vh, 1.55rem);
+  }
+
+  .game-card--grid-4 .game-card__symbol {
+    font-size: clamp(0.75rem, 2.8vh, 1.25rem);
+  }
+
+  .game-card--grid-5 .game-card__symbol {
+    font-size: clamp(0.65rem, 2.2vh, 1rem);
   }
 }
 

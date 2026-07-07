@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { RoundData } from '../game/types'
+import type { GridSize, RoundData } from '../game/types'
 import { GameCard } from './GameCard'
 
 interface RoundBoardProps {
   round: RoundData
+  gridSize: GridSize
   onComplete: (timeMs: number) => void
   active: boolean
   startTime: number
@@ -14,7 +15,7 @@ function symbolAtSlot(round: RoundData, card: 'A' | 'B', slot: number): string |
   return placements.find((p) => p.slot === slot)?.symbolId ?? null
 }
 
-export function RoundBoard({ round, onComplete, active, startTime }: RoundBoardProps) {
+export function RoundBoard({ round, gridSize, onComplete, active, startTime }: RoundBoardProps) {
   const [selectedA, setSelectedA] = useState<number | null>(null)
   const [selectedB, setSelectedB] = useState<number | null>(null)
   const [wrongA, setWrongA] = useState<number | null>(null)
@@ -81,6 +82,7 @@ export function RoundBoard({ round, onComplete, active, startTime }: RoundBoardP
     <div className="round-board">
       <GameCard
         card={round.cardA}
+        gridSize={gridSize}
         label="Card A"
         selectedSlot={selectedA}
         wrongSlot={wrongA}
@@ -89,6 +91,7 @@ export function RoundBoard({ round, onComplete, active, startTime }: RoundBoardP
       />
       <GameCard
         card={round.cardB}
+        gridSize={gridSize}
         label="Card B"
         selectedSlot={selectedB}
         wrongSlot={wrongB}

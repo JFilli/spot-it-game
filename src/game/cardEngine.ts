@@ -1,5 +1,6 @@
 import { SYMBOLS } from './symbols'
-import type { CardData, RoundData, SymbolPlacement } from './types'
+import type { CardData, GridSize, RoundData, SymbolPlacement } from './types'
+import { symbolsNeededPerRound, symbolsPerCard } from './types'
 
 function hashString(str: string): number {
   let hash = 2166136261
@@ -44,8 +45,9 @@ function randomScale(rng: () => number): number {
   return 1.05 + rng() * 0.55
 }
 
-function buildCard(symbolIds: string[], rng: () => number): CardData {
-  const slots = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8], rng)
+function buildCard(symbolIds: string[], gridSize: GridSize, rng: () => number): CardData {
+  const cellCount = symbolsPerCard(gridSize)
+  const slots = shuffle(Array.from({ length: cellCount }, (_, i) => i), rng)
   const placements: SymbolPlacement[] = symbolIds.map((symbolId, index) => ({
     symbolId,
     slot: slots[index],
@@ -55,12 +57,14 @@ function buildCard(symbolIds: string[], rng: () => number): CardData {
   return { placements }
 }
 
-export function generateRound(seed: string, roundIndex: number): RoundData {
-  const rng = seededRandom(`${seed}-${roundIndex}`)
-  const symbols = pickUnique(17, rng)
+export function generateRound(seed: string, roundIndex: number, gridSize: GridSize): RoundData {
+  const perCard = symbolsPerCard(gridSize)
+  const poolSize = symbolsNeededPerRound(gridSize)
+  const rng = seededRandom(`${seed}-${roundIndex}-${gridSize}`)
+  const symbols = pickUnique(poolSize, rng)
   const matchSymbol = symbols[0]
-  const cardA = buildCard([matchSymbol, ...symbols.slice(1, 9)], rng)
-  const cardB = buildCard([matchSymbol, ...symbols.slice(9, 17)], rng)
+  const cardA = buildCard([matchSymbol, ...symbols.slice(1, perCard)], gridSize, rng)
+  const cardB = buildCard([matchSymbol, ...symbols.slice(perCard, poolSize)], gridSize, rng)
   return { cardA, cardB, matchSymbol }
 }
 

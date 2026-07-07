@@ -7,8 +7,10 @@ import { OnlineStatus } from '../components/OnlineStatus'
 import { formatTime } from '../hooks/useRoundTimer'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import { APP_DISPLAY_NAME } from '../lib/brand'
+import { GRID_OPTIONS, gridSizeLabel, type GridSize } from '../game/types'
 
-type Screen = 'name' | 'mode' | 'solo'
+type Screen = 'name' | 'mode' | 'grid' | 'solo'
+type PendingMode = 'solo' | 'multiplayer' | null
 
 const RANK_LABELS = ['1st', '2nd', '3rd']
 
@@ -18,14 +20,18 @@ export function Home() {
   const { createRoom } = useGameRoom(undefined)
   const [name, setName] = useState(loadSavedName)
   const [screen, setScreen] = useState<Screen>(loadSavedName() ? 'mode' : 'name')
+  const [pendingMode, setPendingMode] = useState<PendingMode>(null)
+  const [selectedGridSize, setSelectedGridSize] = useState<GridSize>(3)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [soloBests, setSoloBests] = useState(getSoloBestTimes)
+  const [soloBests, setSoloBests] = useState<number[]>([])
 
   useEffect(() => {
-    const nextScreen = (location.state as { screen?: Screen } | null)?.screen
-    if (nextScreen === 'solo') {
-      setSoloBests(getSoloBestTimes())
+    const state = location.state as { screen?: Screen; gridSize?: GridSize } | null
+    if (state?.screen === 'solo') {
+      const grid = state.gridSize ?? 3
+      setSelectedGridSize(grid)
+      setSoloBests(getSoloBestTimes(grid))
       setScreen('solo')
       navigate('.', { replace: true, state: null })
     }
@@ -38,27 +44,36 @@ export function Home() {
     setScreen('mode')
   }
 
-  const openSolo = () => {
-    setSoloBests(getSoloBestTimes())
-    setScreen('solo')
+  const chooseMode = (mode: PendingMode) => {
+    setPendingMode(mode)
+    setScreen('grid')
+    setError(null)
+  }
+
+  const chooseGridSize = async (gridSize: GridSize) => {
+    setSelectedGridSize(gridSize)
+    if (pendingMode === 'solo') {
+      setSoloBests(getSoloBestTimes(gridSize))
+      setScreen('solo')
+      return
+    }
+    if (pendingMode === 'multiplayer') {
+      setBusy(true)
+      setError(null)
+      try {
+        const code = await createRoom(name.trim(), gridSize)
+        navigate(`/lobby/${code}`)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to create game')
+      } finally {
+        setBusy(false)
+      }
+    }
   }
 
   const startPractice = () => {
-    const query = startPracticeSession(name.trim())
+    const query = startPracticeSession(name.trim(), selectedGridSize)
     navigate(`/play/${PRACTICE_CODE}${query}`)
-  }
-
-  const handleMultiplayer = async () => {
-    setBusy(true)
-    setError(null)
-    try {
-      const code = await createRoom(name.trim())
-      navigate(`/lobby/${code}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create game')
-    } finally {
-      setBusy(false)
-    }
   }
 
   return (
@@ -98,22 +113,46 @@ export function Home() {
             </button>
           </p>
           <h2 className="home__mode-question">Solo or Multiplayer?</h2>
-          <button type="button" className="btn btn--primary" onClick={openSolo}>
+          <button type="button" className="btn btn--primary" onClick={() => chooseMode('solo')}>
             Solo
           </button>
-          <button type="button" className="btn btn--secondary" disabled={busy} onClick={handleMultiplayer}>
-            {busy ? 'Creating…' : 'Multiplayer'}
+          <button type="button" className="btn btn--secondary" onClick={() => chooseMode('multiplayer')}>
+            Multiplayer
           </button>
           <OnlineStatus />
         </div>
       )}
 
-      {screen === 'solo' && (
-        <div className="home__solo">
+      {screen === 'grid' && (
+        <div className="home__grid">
           <button type="button" className="back-button" onClick={() => setScreen('mode')}>
             ← Back
           </button>
-          <h2>Solo</h2>
+          <h2>Choose grid size</h2>
+          <p className="home__grid-hint">How many symbols per card?</p>
+          <div className="grid-size-picker">
+            {GRID_OPTIONS.map((size) => (
+              <button
+                key={size}
+                type="button"
+                className="grid-size-picker__option"
+                disabled={busy}
+                onClick={() => chooseGridSize(size)}
+              >
+                <span className="grid-size-picker__label">{gridSizeLabel(size)}</span>
+                <span className="grid-size-picker__meta">{size * size} symbols</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {screen === 'solo' && (
+        <div className="home__solo">
+          <button type="button" className="back-button" onClick={() => setScreen('grid')}>
+            ← Back
+          </button>
+          <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
           <section className="solo-bests">
             <h3 className="solo-bests__title">Personal Bests</h3>
             <ol className="solo-bests__list">
