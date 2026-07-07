@@ -393,8 +393,8 @@ body {
 
 .play__header-actions {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-end;
+  gap: 0.4rem;
   flex-shrink: 0;
 }
 
@@ -404,9 +404,12 @@ body {
   color: var(--text-muted);
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.25rem 0.35rem;
+  font-family: inherit;
+  padding: 0 0 0.15rem;
+  margin: 0;
   cursor: pointer;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .play__quit-header:hover {
@@ -588,6 +591,20 @@ body {
     margin-bottom: 0.5rem;
   }
 
+  .play__header-actions {
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .play__quit-header {
+    font-size: 0.75rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .timer__value {
+    font-size: 1.25rem;
+  }
+
   .play__hint {
     margin: 0 0 0.75rem;
     font-size: 0.9rem;
@@ -664,9 +681,24 @@ body {
 .rules-screen {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 2rem - var(--safe-top) - var(--safe-bottom));
+  position: relative;
+}
+
+.rules-screen__top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0;
+}
+
+.quit-confirm__message {
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  line-height: 1.45;
 }
 
 .rules-screen__card {

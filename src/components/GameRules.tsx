@@ -3,13 +3,17 @@ import { TOTAL_ROUNDS } from '../game/types'
 
 interface GameRulesProps {
   onStart: () => void
-  onQuit: () => void
-  quitting?: boolean
+  onRequestQuit: () => void
 }
 
-export function GameRules({ onStart, onQuit, quitting = false }: GameRulesProps) {
+export function GameRules({ onStart, onRequestQuit }: GameRulesProps) {
   return (
     <div className="rules-screen">
+      <div className="rules-screen__top">
+        <button type="button" className="play__quit-header" onClick={onRequestQuit}>
+          Quit
+        </button>
+      </div>
       <div className="rules-screen__card">
         <h2>How to play</h2>
         <p className="rules__intro">Welcome to {APP_DISPLAY_NAME}</p>
@@ -23,9 +27,6 @@ export function GameRules({ onStart, onQuit, quitting = false }: GameRulesProps)
         </ul>
         <button type="button" className="btn btn--primary" onClick={onStart}>
           Let&apos;s Go!
-        </button>
-        <button type="button" className="btn btn--ghost" disabled={quitting} onClick={onQuit}>
-          {quitting ? 'Quitting…' : 'Quit Game'}
         </button>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
 import { GameRules } from '../components/GameRules'
+import { QuitConfirm } from '../components/QuitConfirm'
 import { Timer } from '../components/Timer'
 import { formatTime } from '../hooks/useRoundTimer'
 import { useGameRoom } from '../hooks/useGameRoom'
@@ -27,6 +28,7 @@ export function Play() {
   const [timerRunning, setTimerRunning] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [showRules, setShowRules] = useState(false)
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [quitting, setQuitting] = useState(false)
   const roundStartedAtRef = useRef(Date.now())
   const initializedRef = useRef(false)
@@ -38,7 +40,7 @@ export function Play() {
 
   const totalSoFar = times.reduce((sum, t) => sum + t, 0)
 
-  const handleQuit = useCallback(async () => {
+  const confirmQuit = useCallback(async () => {
     if (!code || !playerId || quitting) return
     setQuitting(true)
     try {
@@ -51,8 +53,13 @@ export function Play() {
       navigate(`/lobby/${code}`)
     } finally {
       setQuitting(false)
+      setShowQuitConfirm(false)
     }
   }, [code, playerId, quitting, isSolo, quitGame, navigate])
+
+  const requestQuit = useCallback(() => {
+    setShowQuitConfirm(true)
+  }, [])
 
   useEffect(() => {
     if (!code || !playerId || !room || loading) return
@@ -168,6 +175,15 @@ export function Play() {
     }
   }
 
+  const quitConfirmDialog = showQuitConfirm ? (
+    <QuitConfirm
+      isMultiplayer={!isSolo}
+      quitting={quitting}
+      onCancel={() => setShowQuitConfirm(false)}
+      onConfirm={confirmQuit}
+    />
+  ) : null
+
   if (!room || !hydrated) {
     return (
       <div className="page play">
@@ -179,7 +195,8 @@ export function Play() {
   if (showRules) {
     return (
       <div className="page play">
-        <GameRules onStart={startGame} onQuit={handleQuit} quitting={quitting} />
+        <GameRules onStart={startGame} onRequestQuit={requestQuit} />
+        {quitConfirmDialog}
       </div>
     )
   }
@@ -205,9 +222,9 @@ export function Play() {
             type="button"
             className="play__quit-header"
             disabled={quitting}
-            onClick={handleQuit}
+            onClick={requestQuit}
           >
-            {quitting ? '…' : 'Quit'}
+            Quit
           </button>
         </div>
       </header>
@@ -232,12 +249,14 @@ export function Play() {
             <button type="button" className="btn btn--primary" onClick={nextRound}>
               Next Round
             </button>
-            <button type="button" className="btn btn--ghost" disabled={quitting} onClick={handleQuit}>
-              Quit Game
+            <button type="button" className="btn btn--ghost" onClick={requestQuit}>
+              Quit
             </button>
           </div>
         </div>
       )}
+
+      {quitConfirmDialog}
     </div>
   )
 }
