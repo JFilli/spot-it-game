@@ -24,13 +24,23 @@ export function Home() {
   const [soloBest, setSoloBest] = useState<number | null>(null)
 
   useEffect(() => {
-    const state = location.state as { screen?: Screen; gridSize?: GridSize } | null
+    const state = location.state as {
+      screen?: Screen
+      gridSize?: GridSize
+      pendingMode?: PendingMode
+    } | null
     if (state?.screen === 'solo') {
       const grid = state.gridSize ?? 3
       setSelectedGridSize(grid)
       setSoloBest(getSoloBestTime(grid))
       setPendingMode('solo')
       setScreen('solo')
+      navigate('.', { replace: true, state: null })
+      return
+    }
+    if (state?.screen === 'grid') {
+      setPendingMode(state.pendingMode ?? null)
+      setScreen('grid')
       navigate('.', { replace: true, state: null })
     }
   }, [location.state, navigate])
@@ -137,7 +147,7 @@ export function Home() {
             <button
               type="button"
               className="btn btn--ghost home__leaderboard-btn"
-              onClick={() => navigate('/leaderboard')}
+              onClick={() => navigate('/leaderboard', { state: { from: 'grid', pendingMode } })}
             >
               Leaderboard
             </button>
@@ -176,7 +186,11 @@ export function Home() {
           <button
             type="button"
             className="btn btn--ghost home__leaderboard-btn home__leaderboard-btn--solo"
-            onClick={() => navigate(`/leaderboard?grid=${selectedGridSize}`)}
+            onClick={() =>
+              navigate(`/leaderboard?grid=${selectedGridSize}`, {
+                state: { from: 'solo', gridSize: selectedGridSize },
+              })
+            }
           >
             Leaderboard
           </button>

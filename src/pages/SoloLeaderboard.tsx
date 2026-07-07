@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { fetchSoloLeaderboard, type SoloLeaderboardEntry } from '../game/soloLeaderboard'
 import { GRID_OPTIONS, gridSizeLabel, type GridSize } from '../game/types'
@@ -12,8 +12,15 @@ function parseGridParam(value: string | null): GridSize {
   return GRID_OPTIONS.includes(size as GridSize) ? (size as GridSize) : 3
 }
 
+type LeaderboardLocationState = {
+  from?: 'solo' | 'grid'
+  gridSize?: GridSize
+  pendingMode?: 'solo' | 'multiplayer' | null
+}
+
 export function SoloLeaderboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [gridSize, setGridSize] = useState<GridSize>(() => parseGridParam(searchParams.get('grid')))
   const [entries, setEntries] = useState<SoloLeaderboardEntry[]>([])
@@ -45,9 +52,26 @@ export function SoloLeaderboard() {
     setSearchParams({ grid: String(size) }, { replace: true })
   }
 
+  const goBack = () => {
+    const state = location.state as LeaderboardLocationState | null
+    if (state?.from === 'solo') {
+      navigate('/', { state: { screen: 'solo', gridSize: state.gridSize ?? gridSize } })
+      return
+    }
+    if (state?.from === 'grid') {
+      navigate('/', { state: { screen: 'grid', pendingMode: state.pendingMode ?? null } })
+      return
+    }
+    if (searchParams.get('grid')) {
+      navigate('/', { state: { screen: 'solo', gridSize } })
+      return
+    }
+    navigate('/', { state: { screen: 'grid' } })
+  }
+
   return (
     <div className="page solo-leaderboard">
-      <BackButton label="Back" onClick={() => navigate(-1)} />
+      <BackButton label="Back" onClick={goBack} />
       <h1>Solo Leaderboard</h1>
       <p className="solo-leaderboard__subtitle">Top 50 fastest times</p>
 
