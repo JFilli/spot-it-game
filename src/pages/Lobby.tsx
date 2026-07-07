@@ -3,20 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { finishedPlayers, quitPlayers, hasCompletedGame, totalTime } from '../game/room'
-import { generateRound } from '../game/cardEngine'
-import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
 import { joinUrl, isVercelDeploymentUrl, publicGameUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import { gridSizeLabel } from '../game/types'
-import type { GridSize, LobbyPlayer } from '../game/types'
-
-function roundMatchEmoji(seed: string, roundIndex: number, gridSize: GridSize): string {
-  const round = generateRound(seed, roundIndex, gridSize)
-  return getSymbol(round.matchSymbol).emoji
-}
+import type { LobbyPlayer } from '../game/types'
+import { RoundBreakdown } from '../components/RoundBreakdown'
 
 export function Lobby() {
   const { code } = useParams<{ code: string }>()
@@ -169,17 +163,7 @@ export function Lobby() {
                     </span>
                   </div>
                   {isExpanded && player.times && (
-                    <ul className="lobby__standing-breakdown">
-                      {player.times.map((timeMs, roundIndex) => (
-                        <li key={roundIndex}>
-                          <span className="lobby__round-emoji" aria-hidden>
-                            {roundMatchEmoji(room.seed, roundIndex, room.gridSize)}
-                          </span>
-                          <span className="lobby__round-label">Round {roundIndex + 1}</span>
-                          <span className="lobby__round-time">{formatTime(timeMs)}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <RoundBreakdown seed={room.seed} gridSize={room.gridSize} times={player.times} />
                   )}
                 </li>
               )

@@ -7,12 +7,13 @@ import { recordSoloFinish } from '../game/soloScores'
 import { TOTAL_ROUNDS } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
 import { GameRules } from '../components/GameRules'
+import { GameFinishSummary } from '../components/GameFinishSummary'
 import { QuitConfirm } from '../components/QuitConfirm'
 import { Timer } from '../components/Timer'
 import { formatTime } from '../hooks/useRoundTimer'
 import { useGameRoom } from '../hooks/useGameRoom'
 
-type Phase = 'playing' | 'summary'
+type Phase = 'playing' | 'summary' | 'finished'
 
 export function Play() {
   const { code } = useParams<{ code: string }>()
@@ -135,6 +136,14 @@ export function Play() {
     return () => cancelAnimationFrame(frame)
   }, [timerRunning, hydrated, roundIndex])
 
+  const leaveAfterFinish = useCallback(() => {
+    if (code === PRACTICE_CODE) {
+      navigate('/', { state: { screen: 'solo', gridSize: room?.gridSize ?? 3 } })
+    } else if (code) {
+      navigate(`/lobby/${code}`)
+    }
+  }, [code, navigate, room?.gridSize])
+
   const handleRoundComplete = useCallback(
     async (timeMs: number) => {
       setTimerRunning(false)
@@ -148,10 +157,8 @@ export function Play() {
         if (code === PRACTICE_CODE) {
           const total = newTimes.reduce((sum, t) => sum + t, 0)
           recordSoloFinish(room?.gridSize ?? 3, total)
-          navigate('/', { state: { screen: 'solo', gridSize: room?.gridSize ?? 3 } })
-        } else {
-          navigate(`/lobby/${code}`)
         }
+        setPhase('finished')
       } else {
         setPhase('summary')
         if (code && playerId) {
@@ -165,7 +172,7 @@ export function Play() {
         }
       }
     },
-    [times, roundIndex, submitTimes, navigate, code, playerId],
+    [times, roundIndex, submitTimes, code, playerId, room?.gridSize],
   )
 
   const nextRound = () => {
@@ -264,6 +271,16 @@ export function Play() {
             </button>
           </div>
         </div>
+      )}
+
+      {phase === 'finished' && (
+        <GameFinishSummary
+          seed={room.seed}
+          gridSize={room.gridSize}
+          times={times}
+          isSolo={isSolo}
+          onContinue={leaveAfterFinish}
+        />
       )}
 
       {quitConfirmDialog}
