@@ -46,7 +46,7 @@ export function Lobby() {
     const url = joinUrl(room.code)
     const result = await shareInviteLink(url)
     if (result === 'shared') {
-      setShareFeedback('Invite sent!')
+      setShareFeedback('Link copied! Pick who to invite.')
     } else if (result === 'copied') {
       setShareFeedback('Link copied!')
     } else if (result === 'failed') {

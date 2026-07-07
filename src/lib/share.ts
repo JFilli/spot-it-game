@@ -8,17 +8,19 @@ export function canNativeShare(): boolean {
 
 export async function shareInviteLink(url: string): Promise<ShareInviteResult> {
   const message = `Join my ${APP_NAME} game!`
+  const copied = await copyToClipboard(url)
 
   if (canNativeShare()) {
     try {
       await navigator.share({ title: APP_NAME, text: message, url })
       return 'shared'
     } catch (err) {
-      if ((err as Error).name === 'AbortError') return 'cancelled'
+      if ((err as Error).name === 'AbortError') {
+        return copied ? 'copied' : 'cancelled'
+      }
     }
   }
 
-  const copied = await copyToClipboard(url)
   return copied ? 'copied' : 'failed'
 }
 
