@@ -32,6 +32,7 @@ export function Home() {
       const grid = state.gridSize ?? 3
       setSelectedGridSize(grid)
       setSoloBests(getSoloBestTimes(grid))
+      setPendingMode('solo')
       setScreen('solo')
       navigate('.', { replace: true, state: null })
     }
@@ -125,7 +126,14 @@ export function Home() {
 
       {screen === 'grid' && (
         <div className="home__grid">
-          <button type="button" className="back-button" onClick={() => setScreen('mode')}>
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => {
+              setPendingMode(null)
+              setScreen('mode')
+            }}
+          >
             ← Back
           </button>
           <h2>Choose grid size</h2>
@@ -149,7 +157,14 @@ export function Home() {
 
       {screen === 'solo' && (
         <div className="home__solo">
-          <button type="button" className="back-button" onClick={() => setScreen('grid')}>
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => {
+              setPendingMode('solo')
+              setScreen('grid')
+            }}
+          >
             ← Back
           </button>
           <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
