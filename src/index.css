@@ -470,7 +470,7 @@ body {
 
 .round-board {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0.35rem;
   flex: 1;
   min-height: 0;
@@ -485,9 +485,22 @@ body {
   flex-direction: column;
 }
 
-@media (min-width: 600px) {
-  .round-board {
-    gap: 1rem;
+@media (max-width: 599px) {
+  .play__hint {
+    font-size: 0.75rem;
+    margin: 0 0 0.25rem;
+  }
+
+  .play__player {
+    font-size: 0.75rem;
+  }
+
+  .timer__value {
+    font-size: 1rem;
+  }
+
+  .game-card__symbol {
+    font-size: clamp(0.9rem, 3.6vh, 1.55rem);
   }
 }
 
@@ -577,6 +590,7 @@ body {
 
   .play__hint {
     margin: 0 0 0.75rem;
+    font-size: 0.9rem;
   }
 
   .play__board-wrap {
@@ -585,6 +599,8 @@ body {
 
   .round-board {
     flex: none;
+    flex-direction: row;
+    gap: 1rem;
   }
 
   .game-card {
