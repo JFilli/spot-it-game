@@ -101,6 +101,7 @@ export function Lobby() {
   const onDeploymentUrl = isVercelDeploymentUrl(window.location.origin)
   const hasCompleted = currentPlayer ? hasCompletedGame(currentPlayer) : false
   const hasQuit = Boolean(currentPlayer?.quit)
+  const canViewLeaderboard = hasCompleted || hasQuit
   const ranked = finishedPlayers(room)
   const quitters = quitPlayers(room)
   const leader = ranked[0]
@@ -132,10 +133,14 @@ export function Lobby() {
         {shareFeedback && <p className="lobby__share-feedback">{shareFeedback}</p>}
       </div>
 
-      {hasCompleted && (ranked.length > 0 || quitters.length > 0) && (
+      {canViewLeaderboard && (ranked.length > 0 || quitters.length > 0) && (
         <section className="lobby__standings">
           <h2 className="lobby__standings-title">Leaderboard</h2>
-          <p className="lobby__standings-hint">Tap a name to see round-by-round times</p>
+          <p className="lobby__standings-hint">
+            {hasQuit && ranked.length === 0
+              ? 'Waiting for players to finish…'
+              : 'Tap a name to see round-by-round times'}
+          </p>
           <ol className="lobby__standings-list">
             {ranked.map((player, index) => {
               const playerTotal = totalTime(player.times)
@@ -196,7 +201,9 @@ export function Lobby() {
       )}
 
       {hasQuit && (
-        <p className="lobby__quit-note">You quit this game.</p>
+        <p className="lobby__quit-note">
+          You quit this game.{ranked.length > 0 ? ' You can still follow the leaderboard below.' : ''}
+        </p>
       )}
 
       {!hasCompleted && !hasQuit && (
