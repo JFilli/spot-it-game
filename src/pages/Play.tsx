@@ -61,6 +61,18 @@ export function Play() {
     setShowQuitConfirm(true)
   }, [])
 
+  const returnFromRules = useCallback(() => {
+    if (!code) {
+      navigate('/')
+      return
+    }
+    if (isSolo) {
+      navigate('/', { state: { screen: 'solo' } })
+    } else {
+      navigate(`/lobby/${code}`)
+    }
+  }, [code, isSolo, navigate])
+
   useEffect(() => {
     if (!code || !playerId || !room || loading) return
     if (initializedRef.current) return
@@ -195,7 +207,7 @@ export function Play() {
   if (showRules) {
     return (
       <div className="page play">
-        <GameRules onStart={startGame} onRequestQuit={requestQuit} />
+        <GameRules onStart={startGame} onReturn={returnFromRules} />
         {quitConfirmDialog}
       </div>
     )
