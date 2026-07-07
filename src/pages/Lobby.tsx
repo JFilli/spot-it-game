@@ -8,7 +8,7 @@ import { getSymbol } from '../game/symbols'
 import { formatTime } from '../hooks/useRoundTimer'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { copyInviteLink } from '../lib/share'
-import { joinUrl } from '../lib/brand'
+import { joinUrl, isVercelDeploymentUrl, publicGameUrl } from '../lib/brand'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import type { LobbyPlayer } from '../game/types'
 
@@ -103,6 +103,7 @@ export function Lobby() {
   }
 
   const shareUrl = joinUrl(room.code)
+  const onDeploymentUrl = isVercelDeploymentUrl(window.location.origin)
   const hasCompleted = currentPlayer ? hasCompletedGame(currentPlayer) : false
   const hasQuit = Boolean(currentPlayer?.quit)
   const ranked = finishedPlayers(room)
@@ -122,6 +123,11 @@ export function Lobby() {
 
       <div className="lobby__share">
         <p>Invite friends with this link:</p>
+        {onDeploymentUrl && (
+          <p className="lobby__preview-note">
+            Friends should use the link below ({publicGameUrl()}). Open that URL yourself to play — preview pages require a Vercel login.
+          </p>
+        )}
         <code className="lobby__link">{shareUrl}</code>
         <button type="button" className="btn btn--secondary" onClick={handleCopyLink}>
           Copy Invite Link

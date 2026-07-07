@@ -199,17 +199,29 @@ export function Play() {
           <span className="play__round">Round {roundIndex + 1} of {TOTAL_ROUNDS}</span>
           <span className="play__player">{playerName}</span>
         </div>
-        <Timer elapsed={elapsed} running={timerRunning} />
+        <div className="play__header-actions">
+          <Timer elapsed={elapsed} running={timerRunning} />
+          <button
+            type="button"
+            className="play__quit-header"
+            disabled={quitting}
+            onClick={handleQuit}
+          >
+            {quitting ? '…' : 'Quit'}
+          </button>
+        </div>
       </header>
 
-      <p className="play__hint">Select the matching symbol on both cards</p>
+      <p className="play__hint">Tap the match on both cards</p>
 
-      <RoundBoard
-        round={round}
-        active={phase === 'playing' && timerRunning}
-        startTime={roundStartedAtRef.current}
-        onComplete={handleRoundComplete}
-      />
+      <div className="play__board-wrap">
+        <RoundBoard
+          round={round}
+          active={phase === 'playing' && timerRunning}
+          startTime={roundStartedAtRef.current}
+          onComplete={handleRoundComplete}
+        />
+      </div>
 
       <button
         type="button"
