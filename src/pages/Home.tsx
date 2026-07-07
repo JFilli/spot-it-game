@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { PRACTICE_CODE, startPracticeSession } from '../game/practice'
-import { getSoloBestTimes } from '../game/soloScores'
+import { getSoloBestTime } from '../game/soloScores'
 import { OnlineStatus } from '../components/OnlineStatus'
 import { formatTime } from '../hooks/useRoundTimer'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
@@ -11,8 +11,6 @@ import { GRID_OPTIONS, gridSizeLabel, type GridSize } from '../game/types'
 
 type Screen = 'name' | 'mode' | 'grid' | 'solo'
 type PendingMode = 'solo' | 'multiplayer' | null
-
-const RANK_LABELS = ['1st', '2nd', '3rd']
 
 export function Home() {
   const navigate = useNavigate()
@@ -24,14 +22,14 @@ export function Home() {
   const [selectedGridSize, setSelectedGridSize] = useState<GridSize>(3)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [soloBests, setSoloBests] = useState<number[]>([])
+  const [soloBest, setSoloBest] = useState<number | null>(null)
 
   useEffect(() => {
     const state = location.state as { screen?: Screen; gridSize?: GridSize } | null
     if (state?.screen === 'solo') {
       const grid = state.gridSize ?? 3
       setSelectedGridSize(grid)
-      setSoloBests(getSoloBestTimes(grid))
+      setSoloBest(getSoloBestTime(grid))
       setPendingMode('solo')
       setScreen('solo')
       navigate('.', { replace: true, state: null })
@@ -54,7 +52,7 @@ export function Home() {
   const chooseGridSize = async (gridSize: GridSize) => {
     setSelectedGridSize(gridSize)
     if (pendingMode === 'solo') {
-      setSoloBests(getSoloBestTimes(gridSize))
+      setSoloBest(getSoloBestTime(gridSize))
       setScreen('solo')
       return
     }
@@ -169,18 +167,10 @@ export function Home() {
           </button>
           <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
           <section className="solo-bests">
-            <h3 className="solo-bests__title">Personal Bests</h3>
-            <ol className="solo-bests__list">
-              {RANK_LABELS.map((label, index) => {
-                const time = soloBests[index]
-                return (
-                  <li key={label} className={`solo-bests__item${time !== undefined ? '' : ' solo-bests__item--empty'}`}>
-                    <span className="solo-bests__rank">{label}</span>
-                    <span className="solo-bests__time">{time !== undefined ? formatTime(time) : '—'}</span>
-                  </li>
-                )
-              })}
-            </ol>
+            <h3 className="solo-bests__title">Personal Best</h3>
+            <p className={`solo-bests__best${soloBest === null ? ' solo-bests__best--empty' : ''}`}>
+              {soloBest !== null ? formatTime(soloBest) : '—'}
+            </p>
           </section>
           <button type="button" className="btn btn--primary" onClick={startPractice}>
             Start New Game

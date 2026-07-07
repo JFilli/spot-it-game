@@ -10,12 +10,14 @@ function loadRaw(gridSize: GridSize): number[] {
   }
 }
 
-export function getSoloBestTimes(gridSize: GridSize): number[] {
-  return loadRaw(gridSize).sort((a, b) => a - b).slice(0, 3)
+export function getSoloBestTime(gridSize: GridSize): number | null {
+  const sorted = loadRaw(gridSize).sort((a, b) => a - b)
+  return sorted[0] ?? null
 }
 
-export function recordSoloFinish(gridSize: GridSize, totalMs: number): number[] {
-  const updated = [...loadRaw(gridSize), totalMs].sort((a, b) => a - b).slice(0, 3)
-  writeStorage(`${storageKeys.soloBests}-${gridSize}`, JSON.stringify(updated))
-  return updated
+export function recordSoloFinish(gridSize: GridSize, totalMs: number): number {
+  const current = getSoloBestTime(gridSize)
+  const best = current === null ? totalMs : Math.min(current, totalMs)
+  writeStorage(`${storageKeys.soloBests}-${gridSize}`, JSON.stringify([best]))
+  return best
 }

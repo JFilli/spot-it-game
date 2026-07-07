@@ -228,40 +228,24 @@ body {
   letter-spacing: 0.05em;
 }
 
-.solo-bests__list {
-  list-style: none;
-  padding: 0;
+.solo-bests__best {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.solo-bests__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.04);
   border-radius: var(--radius);
   border-left: 4px solid var(--accent-2);
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
 }
 
-.solo-bests__item--empty {
+.solo-bests__best--empty {
   border-left-color: #444;
   opacity: 0.7;
-}
-
-.solo-bests__rank {
-  font-weight: 700;
   color: var(--text-muted);
-}
-
-.solo-bests__time {
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent-2);
-  font-size: 1.1rem;
+  font-size: 1.25rem;
 }
 
 .lobby__copy-hint {

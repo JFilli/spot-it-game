@@ -20,7 +20,7 @@ export function GameRules({ gridSize, onStart, onReturn }: GameRulesProps) {
           <li>Tap the match on <strong>Card A</strong>, then tap the same match on <strong>Card B</strong>.</li>
           <li>Wrong picks turn red — keep trying until you find the pair.</li>
           <li>You play <strong>{TOTAL_ROUNDS} rounds</strong>. The timer runs until you find each match.</li>
-          <li><strong>Lowest total time wins.</strong> In solo, try to beat your personal bests!</li>
+          <li><strong>Lowest total time wins.</strong> In solo, try to beat your personal best!</li>
         </ul>
         <button type="button" className="btn btn--primary" onClick={onStart}>
           Let&apos;s Go!
