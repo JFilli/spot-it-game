@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { PRACTICE_CODE, startPracticeSession } from '../game/practice'
 import { getSoloBestTime } from '../game/soloScores'
-import { OnlineStatus } from '../components/OnlineStatus'
 import { formatTime } from '../hooks/useRoundTimer'
 import { loadSavedName, savePlayerName } from '../lib/playerName'
 import { APP_DISPLAY_NAME } from '../lib/brand'
@@ -118,7 +117,6 @@ export function Home() {
           <button type="button" className="btn btn--secondary" onClick={() => chooseMode('multiplayer')}>
             Multiplayer
           </button>
-          <OnlineStatus />
         </div>
       )}
 
