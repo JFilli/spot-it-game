@@ -30,6 +30,8 @@ function parseRace(raw: unknown): RaceState | null {
     roundWinnerId: race.roundWinnerId ?? null,
     countdownEndsAt: typeof race.countdownEndsAt === 'number' ? race.countdownEndsAt : null,
     roundStartedAt: typeof race.roundStartedAt === 'number' ? race.roundStartedAt : null,
+    rematchIds: Array.isArray(race.rematchIds) ? race.rematchIds.map(String) : empty.rematchIds,
+    rematchDeclinedBy: race.rematchDeclinedBy ?? null,
   }
 }
 

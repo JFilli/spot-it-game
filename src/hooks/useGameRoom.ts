@@ -462,6 +462,8 @@ export function useGameRoom(code: string | undefined) {
           ...roomData.race,
           status: 'finished',
           readyIds: [],
+          rematchIds: [],
+          rematchDeclinedBy: null,
           countdownEndsAt: null,
           roundStartedAt: null,
         },
@@ -482,21 +484,56 @@ export function useGameRoom(code: string | undefined) {
     })
   }, [code, fetchRoom, persistRoom])
 
-  const rematchRace = useCallback(async () => {
+  const requestRematch = useCallback(async () => {
     if (!code || !playerId) return
     const roomData = await fetchRoom()
-    if (!roomData?.race || roomData.mode !== 'race') return
+    if (!roomData?.race || roomData.mode !== 'race' || roomData.race.status !== 'finished') return
+    if (roomData.race.rematchDeclinedBy) return
+
+    const rematchIds = roomData.race.rematchIds.includes(playerId)
+      ? roomData.race.rematchIds
+      : [...roomData.race.rematchIds, playerId]
+
+    const bothWantRematch = roomData.players.every((p) => rematchIds.includes(p.id))
+    if (!bothWantRematch) {
+      await persistRoom({
+        ...roomData,
+        race: {
+          ...roomData.race,
+          rematchIds,
+          rematchDeclinedBy: null,
+        },
+      })
+      return
+    }
 
     const wins = Object.fromEntries(roomData.players.map((p) => [p.id, 0]))
     await persistRoom({
       ...roomData,
       players: roomData.players.map((p) => ({ ...p, quit: false, done: false, times: null })),
+      seed: generateGameSeed(),
       race: {
         ...createEmptyRaceState(),
+        status: 'countdown',
         wins,
-        readyIds: [playerId],
+        countdownEndsAt: Date.now() + RACE_COUNTDOWN_MS,
       },
-      seed: generateGameSeed(),
+    })
+  }, [code, playerId, fetchRoom, persistRoom])
+
+  const declineRematch = useCallback(async () => {
+    if (!code || !playerId) return
+    const roomData = await fetchRoom()
+    if (!roomData?.race || roomData.mode !== 'race') return
+    if (roomData.race.status !== 'finished') return
+
+    await persistRoom({
+      ...roomData,
+      race: {
+        ...roomData.race,
+        rematchDeclinedBy: playerId,
+        rematchIds: [],
+      },
     })
   }, [code, playerId, fetchRoom, persistRoom])
 
@@ -515,7 +552,8 @@ export function useGameRoom(code: string | undefined) {
     beginRacePlaying,
     claimRaceRound,
     advanceRaceRound,
-    rematchRace,
+    requestRematch,
+    declineRematch,
     setPlayerName,
   }
 }

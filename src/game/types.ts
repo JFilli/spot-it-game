@@ -35,6 +35,8 @@ export interface RaceState {
   roundWinnerId: string | null
   countdownEndsAt: number | null
   roundStartedAt: number | null
+  rematchIds: string[]
+  rematchDeclinedBy: string | null
 }
 
 export interface GameRoom {
@@ -77,5 +79,7 @@ export function createEmptyRaceState(): RaceState {
     roundWinnerId: null,
     countdownEndsAt: null,
     roundStartedAt: null,
+    rematchIds: [],
+    rematchDeclinedBy: null,
   }
 }

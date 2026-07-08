@@ -414,6 +414,12 @@ body {
   vertical-align: middle;
 }
 
+.race-rematch-note {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 .race-score-line {
   font-size: 1.15rem;
   font-weight: 700;

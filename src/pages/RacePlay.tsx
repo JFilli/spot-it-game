@@ -17,13 +17,15 @@ export function RacePlay() {
     beginRacePlaying,
     claimRaceRound,
     advanceRaceRound,
-    rematchRace,
+    requestRematch,
+    declineRematch,
     quitGame,
   } = useGameRoom(code)
 
   const [countdownLeft, setCountdownLeft] = useState(0)
   const [claiming, setClaiming] = useState(false)
   const [quitting, setQuitting] = useState(false)
+  const [rematchBusy, setRematchBusy] = useState(false)
   const advancedRoundRef = useRef<number | null>(null)
   const startedPlayingRef = useRef<number | null>(null)
 
@@ -108,8 +110,26 @@ export function RacePlay() {
   }
 
   const handleRematch = async () => {
-    await rematchRace()
-    if (code) navigate(`/race/${code}`)
+    if (rematchBusy) return
+    setRematchBusy(true)
+    try {
+      await requestRematch()
+    } finally {
+      setRematchBusy(false)
+    }
+  }
+
+  const handleBackToLobby = async () => {
+    if (rematchBusy) return
+    setRematchBusy(true)
+    try {
+      if (race?.status === 'finished') {
+        await declineRematch()
+      }
+      if (code) navigate(`/race/${code}`)
+    } finally {
+      setRematchBusy(false)
+    }
   }
 
   if (loading || !room || !race || !round) {
@@ -127,6 +147,12 @@ export function RacePlay() {
   const matchDecided = Boolean(matchWinnerId)
   const revealAnswer = opponentWonRound && race.status === 'round_result'
   const showBoard = race.status === 'playing' || race.status === 'round_result'
+  const iWantRematch = Boolean(playerId && race.rematchIds.includes(playerId))
+  const opponentWantsRematch = Boolean(opponent && race.rematchIds.includes(opponent.id))
+  const rematchDeclined = Boolean(race.rematchDeclinedBy)
+  const opponentDeclinedRematch = Boolean(
+    race.rematchDeclinedBy && race.rematchDeclinedBy !== playerId,
+  )
 
   return (
     <div className="page play race-play">
@@ -211,12 +237,62 @@ export function RacePlay() {
             <p className="race-score-line">
               Final: {myWins} – {theirWins}
             </p>
-            <button type="button" className="btn btn--primary" onClick={handleRematch}>
-              Rematch
-            </button>
-            <button type="button" className="btn btn--ghost" onClick={() => navigate(`/race/${code}`)}>
-              Back to Lobby
-            </button>
+
+            {opponentDeclinedRematch ? (
+              <>
+                <p className="race-rematch-note">
+                  {opponent?.name ?? 'Your opponent'} declined the rematch.
+                </p>
+                <button type="button" className="btn btn--primary" onClick={() => navigate(`/race/${code}`)}>
+                  Back to Lobby
+                </button>
+              </>
+            ) : rematchDeclined && race.rematchDeclinedBy === playerId ? (
+              <>
+                <p className="race-rematch-note">You declined the rematch.</p>
+                <button type="button" className="btn btn--primary" onClick={() => navigate(`/race/${code}`)}>
+                  Back to Lobby
+                </button>
+              </>
+            ) : iWantRematch ? (
+              <>
+                <p className="race-rematch-note">
+                  Rematch requested. Waiting for {opponent?.name ?? 'your opponent'}…
+                </p>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={rematchBusy}
+                  onClick={handleBackToLobby}
+                >
+                  Cancel & Return to Lobby
+                </button>
+              </>
+            ) : (
+              <>
+                {opponentWantsRematch && (
+                  <p className="race-rematch-note">
+                    {opponent?.name ?? 'Your opponent'} wants a rematch!
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  disabled={rematchBusy}
+                  onClick={handleRematch}
+                >
+                  {rematchBusy ? 'Updating…' : 'Rematch'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={rematchBusy}
+                  onClick={handleBackToLobby}
+                >
+                  Back to Lobby
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
