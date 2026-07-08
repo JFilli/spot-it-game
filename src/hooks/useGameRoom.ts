@@ -17,7 +17,6 @@ import {
   MAX_PLAYERS,
   RACE_COUNTDOWN_MS,
   RACE_MAX_PLAYERS,
-  RACE_WINS_NEEDED,
   createEmptyRaceState,
 } from '../game/types'
 
@@ -439,14 +438,12 @@ export function useGameRoom(code: string | undefined) {
 
     const wins = { ...roomData.race.wins }
     wins[playerId] = (wins[playerId] ?? 0) + 1
-    const matchOver = wins[playerId] >= RACE_WINS_NEEDED
 
     const race: RaceState = {
       ...roomData.race,
       wins,
       roundWinnerId: playerId,
-      status: matchOver ? 'finished' : 'round_result',
-      readyIds: matchOver ? [] : roomData.race.readyIds,
+      status: 'round_result',
     }
 
     await persistRoom({ ...roomData, race })
@@ -457,7 +454,20 @@ export function useGameRoom(code: string | undefined) {
     if (!code) return
     const roomData = await fetchRoom()
     if (!roomData?.race || roomData.race.status !== 'round_result') return
-    if (raceMatchWinnerId(roomData.race)) return
+
+    if (raceMatchWinnerId(roomData.race)) {
+      await persistRoom({
+        ...roomData,
+        race: {
+          ...roomData.race,
+          status: 'finished',
+          readyIds: [],
+          countdownEndsAt: null,
+          roundStartedAt: null,
+        },
+      })
+      return
+    }
 
     await persistRoom({
       ...roomData,

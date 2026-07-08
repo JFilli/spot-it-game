@@ -124,8 +124,9 @@ export function RacePlay() {
   const iWonMatch = matchWinnerId === playerId
   const theyWonMatch = Boolean(matchWinnerId && matchWinnerId !== playerId)
   const opponentWonRound = Boolean(roundWinner && roundWinner.id !== playerId)
-  const revealAnswer = opponentWonRound && (race.status === 'round_result' || race.status === 'finished')
-  const showBoard = race.status === 'playing' || race.status === 'round_result' || revealAnswer
+  const matchDecided = Boolean(matchWinnerId)
+  const revealAnswer = opponentWonRound && race.status === 'round_result'
+  const showBoard = race.status === 'playing' || race.status === 'round_result'
 
   return (
     <div className="page play race-play">
@@ -185,7 +186,7 @@ export function RacePlay() {
       {race.status === 'round_result' && roundWinner && opponentWonRound && (
         <div className="race-result-banner" role="status">
           <strong>{roundWinner.name} won the round!</strong>
-          <span>Matching symbols highlighted · Score {myWins}–{theirWins}</span>
+          <span>Score {myWins}–{theirWins}</span>
         </div>
       )}
 
@@ -196,7 +197,7 @@ export function RacePlay() {
             <p className="race-score-line">
               Score: {myWins} – {theirWins}
             </p>
-            <p>Next round starting…</p>
+            <p>{matchDecided ? 'Match over…' : 'Next round starting…'}</p>
           </div>
         </div>
       )}
