@@ -279,6 +279,100 @@ body {
   font-size: 1.35rem;
 }
 
+.home__mode-hint {
+  text-align: center;
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.race-players {
+  margin: 1.25rem 0;
+}
+
+.race-players__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.race-players__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.race-players__item--you {
+  outline: 2px solid var(--accent-2);
+}
+
+.race-players__item--empty {
+  color: var(--text-muted);
+  font-weight: 500;
+  justify-content: center;
+}
+
+.race-players__ready {
+  color: var(--success);
+  font-size: 0.9rem;
+}
+
+.race-players__waiting {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.race-play__vs {
+  text-align: center;
+  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.race-score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+}
+
+.race-score__you {
+  color: var(--accent-2);
+}
+
+.race-score__them {
+  color: var(--p2);
+}
+
+.race-score__sep {
+  color: var(--text-muted);
+}
+
+.race-countdown {
+  font-size: 4rem;
+  font-weight: 800;
+  margin: 0.5rem 0;
+  color: var(--accent-2);
+  line-height: 1;
+}
+
+.race-score-line {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
 .solo-bests {
   background: var(--surface);
   border-radius: var(--radius);

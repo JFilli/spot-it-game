@@ -38,6 +38,10 @@ export function joinUrl(roomCode: string): string {
   return `${appOrigin()}/join/${roomCode.toUpperCase()}`
 }
 
+export function raceJoinUrl(roomCode: string): string {
+  return `${appOrigin()}/race/${roomCode.toUpperCase()}`
+}
+
 export function publicGameUrl(): string {
   return configuredOrigin() ?? PRODUCTION_ORIGIN
 }

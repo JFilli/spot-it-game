@@ -1,9 +1,36 @@
-import type { GameRoom, LobbyPlayer } from './types'
-import { GRID_OPTIONS, MAX_PLAYERS, TOTAL_ROUNDS, type GridSize } from './types'
+import type { GameRoom, LobbyPlayer, RaceState, RoomMode } from './types'
+import {
+  GRID_OPTIONS,
+  MAX_PLAYERS,
+  RACE_MAX_PLAYERS,
+  RACE_WINS_NEEDED,
+  TOTAL_ROUNDS,
+  createEmptyRaceState,
+  type GridSize,
+} from './types'
 
 function parseGridSize(raw: unknown): GridSize {
   const size = Number(raw)
   return GRID_OPTIONS.includes(size as GridSize) ? (size as GridSize) : 3
+}
+
+function parseMode(raw: unknown): RoomMode {
+  return raw === 'race' ? 'race' : 'async'
+}
+
+function parseRace(raw: unknown): RaceState | null {
+  if (!raw || typeof raw !== 'object') return null
+  const race = raw as Partial<RaceState>
+  const empty = createEmptyRaceState()
+  return {
+    status: race.status ?? empty.status,
+    roundIndex: typeof race.roundIndex === 'number' ? race.roundIndex : empty.roundIndex,
+    readyIds: Array.isArray(race.readyIds) ? race.readyIds.map(String) : empty.readyIds,
+    wins: race.wins && typeof race.wins === 'object' ? race.wins : empty.wins,
+    roundWinnerId: race.roundWinnerId ?? null,
+    countdownEndsAt: typeof race.countdownEndsAt === 'number' ? race.countdownEndsAt : null,
+    roundStartedAt: typeof race.roundStartedAt === 'number' ? race.roundStartedAt : null,
+  }
 }
 
 export function createLobbyPlayer(name: string): LobbyPlayer {
@@ -26,7 +53,8 @@ export function findPlayer(room: GameRoom, playerId: string): LobbyPlayer | unde
 }
 
 export function isRoomFull(room: GameRoom): boolean {
-  return room.players.length >= MAX_PLAYERS
+  const cap = room.mode === 'race' ? RACE_MAX_PLAYERS : MAX_PLAYERS
+  return room.players.length >= cap
 }
 
 export function finishedPlayers(room: GameRoom): LobbyPlayer[] {
@@ -63,15 +91,43 @@ export function getPlayerRank(room: GameRoom, playerId: string): number | null {
   return index >= 0 ? index + 1 : null
 }
 
+export function getRaceWins(race: RaceState | null, playerId: string): number {
+  if (!race) return 0
+  return race.wins[playerId] ?? 0
+}
+
+export function raceMatchWinnerId(race: RaceState | null): string | null {
+  if (!race) return null
+  for (const [playerId, wins] of Object.entries(race.wins)) {
+    if (wins >= RACE_WINS_NEEDED) return playerId
+  }
+  return null
+}
+
+export function bothPlayersReady(room: GameRoom): boolean {
+  if (!room.race || room.players.length < RACE_MAX_PLAYERS) return false
+  return room.players.every((p) => room.race!.readyIds.includes(p.id))
+}
+
 /** Migrate legacy two-player room format from localStorage */
 export function normalizeRoom(raw: Record<string, unknown>): GameRoom | null {
+  const mode = parseMode(raw.mode)
+  const race = mode === 'race' ? parseRace(raw.race) ?? createEmptyRaceState() : null
+
   if (Array.isArray(raw.players)) {
     const players = (raw.players as LobbyPlayer[]).map((p) => ({
       ...p,
       quit: p.quit ?? false,
     }))
     const gridSize = parseGridSize(raw.grid_size ?? raw.gridSize)
-    return { ...(raw as unknown as GameRoom), players, gridSize }
+    return {
+      code: String(raw.code),
+      seed: String(raw.seed),
+      players,
+      gridSize,
+      mode,
+      race,
+    }
   }
 
   const code = raw.code as string
@@ -98,5 +154,5 @@ export function normalizeRoom(raw: Record<string, unknown>): GameRoom | null {
     })
   }
 
-  return { code, seed, gridSize: 3, players }
+  return { code, seed, gridSize: 3, mode: 'async', players, race: null }
 }

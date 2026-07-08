@@ -2,6 +2,8 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { Lobby } from './pages/Lobby'
 import { PlayRoute } from './pages/PlayRoute'
+import { RaceLobby } from './pages/RaceLobby'
+import { RacePlay } from './pages/RacePlay'
 import { SoloLeaderboard } from './pages/SoloLeaderboard'
 
 function JoinRedirect() {
@@ -22,6 +24,8 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/leaderboard" element={<SoloLeaderboard />} />
       <Route path="/lobby/:code" element={<Lobby />} />
+      <Route path="/race/:code" element={<RaceLobby />} />
+      <Route path="/race/:code/play" element={<RacePlay />} />
       <Route path="/play/:code" element={<PlayRoute />} />
       <Route path="/results/:code" element={<ResultsRedirect />} />
       <Route path="/join/:code" element={<JoinRedirect />} />

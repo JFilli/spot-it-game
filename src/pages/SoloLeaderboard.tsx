@@ -15,7 +15,7 @@ function parseGridParam(value: string | null): GridSize {
 type LeaderboardLocationState = {
   from?: 'solo' | 'grid'
   gridSize?: GridSize
-  pendingMode?: 'solo' | 'multiplayer' | null
+  pendingMode?: 'solo' | 'multiplayer' | 'race' | null
 }
 
 export function SoloLeaderboard() {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { finishedPlayers, quitPlayers, hasCompletedGame, totalTime } from '../game/room'
@@ -79,6 +79,10 @@ export function Lobby() {
         <p className="error">Game not found.</p>
       </div>
     )
+  }
+
+  if (room.mode === 'race') {
+    return <Navigate to={`/race/${room.code}`} replace />
   }
 
   if (!playerId) {

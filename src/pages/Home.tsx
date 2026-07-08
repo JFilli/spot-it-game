@@ -9,7 +9,7 @@ import { APP_DISPLAY_NAME } from '../lib/brand'
 import { GRID_OPTIONS, gridSizeLabel, type GridSize } from '../game/types'
 
 type Screen = 'name' | 'mode' | 'grid' | 'solo'
-type PendingMode = 'solo' | 'multiplayer' | null
+type PendingMode = 'solo' | 'multiplayer' | 'race' | null
 
 export function Home() {
   const navigate = useNavigate()
@@ -65,12 +65,12 @@ export function Home() {
       setScreen('solo')
       return
     }
-    if (pendingMode === 'multiplayer') {
+    if (pendingMode === 'multiplayer' || pendingMode === 'race') {
       setBusy(true)
       setError(null)
       try {
-        const code = await createRoom(name.trim(), gridSize)
-        navigate(`/lobby/${code}`)
+        const code = await createRoom(name.trim(), gridSize, pendingMode === 'race' ? 'race' : 'async')
+        navigate(pendingMode === 'race' ? `/race/${code}` : `/lobby/${code}`)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to create game')
       } finally {
@@ -120,13 +120,17 @@ export function Home() {
               Change
             </button>
           </p>
-          <h2 className="home__mode-question">Solo or Multiplayer?</h2>
+          <h2 className="home__mode-question">How do you want to play?</h2>
           <button type="button" className="btn btn--primary" onClick={() => chooseMode('solo')}>
             Solo
           </button>
-          <button type="button" className="btn btn--secondary" onClick={() => chooseMode('multiplayer')}>
-            Multiplayer
+          <button type="button" className="btn btn--secondary" onClick={() => chooseMode('race')}>
+            1v1 Race
           </button>
+          <button type="button" className="btn btn--ghost" onClick={() => chooseMode('multiplayer')}>
+            Time Trial Multiplayer
+          </button>
+          <p className="home__mode-hint">Race = live head-to-head. Time Trial = play at your own pace.</p>
         </div>
       )}
 

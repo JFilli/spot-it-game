@@ -15,6 +15,8 @@ export function createPracticeRoom(playerName: string, gridSize: GridSize): Game
     code: PRACTICE_CODE,
     seed: generateGameSeed(),
     gridSize,
+    mode: 'async',
+    race: null,
     players: [createLobbyPlayer(playerName)],
   }
 }
@@ -34,6 +36,8 @@ export function startPracticeSession(playerName: string, gridSize: GridSize): st
     code: PRACTICE_CODE,
     seed: generateGameSeed(),
     gridSize,
+    mode: 'async',
+    race: null,
     players: [player],
   }
   savePracticeRoom(room, player.id, playerName)

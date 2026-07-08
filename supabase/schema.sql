@@ -4,7 +4,9 @@ create table if not exists game_rooms (
   code text primary key,
   seed text not null,
   grid_size integer not null default 3,
+  mode text not null default 'async',
   players jsonb not null default '[]',
+  race jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -27,6 +29,10 @@ alter publication supabase_realtime add table game_rooms;
 
 -- Migration: add grid size support (run in Supabase SQL editor if upgrading):
 -- alter table game_rooms add column if not exists grid_size integer not null default 3;
+
+-- Migration: add 1v1 race mode support (run in Supabase SQL editor):
+-- alter table game_rooms add column if not exists mode text not null default 'async';
+-- alter table game_rooms add column if not exists race jsonb;
 
 -- Solo global leaderboard (run in Supabase SQL editor):
 -- create table if not exists solo_leaderboard (
