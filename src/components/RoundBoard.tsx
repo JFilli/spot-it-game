@@ -8,6 +8,7 @@ interface RoundBoardProps {
   onComplete: (timeMs: number) => void
   active: boolean
   startTime: number
+  revealMatch?: boolean
 }
 
 function symbolAtSlot(round: RoundData, card: 'A' | 'B', slot: number): string | null {
@@ -15,7 +16,12 @@ function symbolAtSlot(round: RoundData, card: 'A' | 'B', slot: number): string |
   return placements.find((p) => p.slot === slot)?.symbolId ?? null
 }
 
-export function RoundBoard({ round, gridSize, onComplete, active, startTime }: RoundBoardProps) {
+function slotForSymbol(round: RoundData, card: 'A' | 'B', symbolId: string): number | null {
+  const placements = card === 'A' ? round.cardA.placements : round.cardB.placements
+  return placements.find((p) => p.symbolId === symbolId)?.slot ?? null
+}
+
+export function RoundBoard({ round, gridSize, onComplete, active, startTime, revealMatch = false }: RoundBoardProps) {
   const [selectedA, setSelectedA] = useState<number | null>(null)
   const [selectedB, setSelectedB] = useState<number | null>(null)
   const [wrongA, setWrongA] = useState<number | null>(null)
@@ -77,6 +83,8 @@ export function RoundBoard({ round, gridSize, onComplete, active, startTime }: R
   }, [selectedA, selectedB, active, completed, round, onComplete, startTime])
 
   const locked = !active || completed
+  const revealA = revealMatch ? slotForSymbol(round, 'A', round.matchSymbol) : null
+  const revealB = revealMatch ? slotForSymbol(round, 'B', round.matchSymbol) : null
 
   return (
     <div className="round-board">
@@ -86,6 +94,7 @@ export function RoundBoard({ round, gridSize, onComplete, active, startTime }: R
         label="Card A"
         selectedSlot={selectedA}
         wrongSlot={wrongA}
+        revealSlot={revealA}
         disabled={locked}
         onSymbolTap={(symbolId, slot) => handleTap('A', symbolId, slot)}
       />
@@ -95,6 +104,7 @@ export function RoundBoard({ round, gridSize, onComplete, active, startTime }: R
         label="Card B"
         selectedSlot={selectedB}
         wrongSlot={wrongB}
+        revealSlot={revealB}
         disabled={locked}
         onSymbolTap={(symbolId, slot) => handleTap('B', symbolId, slot)}
       />

@@ -51,7 +51,7 @@ export const MAX_PLAYERS = 10
 export const RACE_MAX_PLAYERS = 2
 export const RACE_WINS_NEEDED = 2
 export const RACE_COUNTDOWN_MS = 3000
-export const RACE_RESULT_MS = 2500
+export const RACE_RESULT_MS = 2800
 
 export const GRID_OPTIONS = [2, 3, 4, 5] as const
 export type GridSize = (typeof GRID_OPTIONS)[number]

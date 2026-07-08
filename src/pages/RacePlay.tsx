@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { generateRound } from '../game/cardEngine'
 import { getRaceWins, raceMatchWinnerId } from '../game/room'
-import { getSymbol } from '../game/symbols'
 import { RACE_RESULT_MS, RACE_WINS_NEEDED, gridSizeLabel } from '../game/types'
 import { RoundBoard } from '../components/RoundBoard'
 import { useGameRoom } from '../hooks/useGameRoom'
@@ -125,8 +124,8 @@ export function RacePlay() {
   const iWonMatch = matchWinnerId === playerId
   const theyWonMatch = Boolean(matchWinnerId && matchWinnerId !== playerId)
   const opponentWonRound = Boolean(roundWinner && roundWinner.id !== playerId)
-  const showBoard = race.status === 'playing' || race.status === 'round_result'
-  const matchEmoji = getSymbol(round.matchSymbol).emoji
+  const revealAnswer = opponentWonRound && (race.status === 'round_result' || race.status === 'finished')
+  const showBoard = race.status === 'playing' || race.status === 'round_result' || revealAnswer
 
   return (
     <div className="page play race-play">
@@ -163,6 +162,7 @@ export function RacePlay() {
             gridSize={room.gridSize}
             active={race.status === 'playing' && !claiming}
             startTime={race.roundStartedAt ?? Date.now()}
+            revealMatch={revealAnswer}
             onComplete={() => {
               void handleFoundMatch()
             }}
@@ -182,15 +182,17 @@ export function RacePlay() {
         </div>
       )}
 
-      {race.status === 'round_result' && roundWinner && (
+      {race.status === 'round_result' && roundWinner && opponentWonRound && (
+        <div className="race-result-banner" role="status">
+          <strong>{roundWinner.name} won the round!</strong>
+          <span>Matching symbols highlighted · Score {myWins}–{theirWins}</span>
+        </div>
+      )}
+
+      {race.status === 'round_result' && roundWinner && !opponentWonRound && (
         <div className="overlay">
           <div className="overlay__card">
-            <h2>{roundWinner.id === playerId ? 'You won the round!' : `${roundWinner.name} won the round!`}</h2>
-            {opponentWonRound && (
-              <p className="race-answer">
-                The matching symbol was <span className="race-answer__emoji">{matchEmoji}</span>
-              </p>
-            )}
+            <h2>You won the round!</h2>
             <p className="race-score-line">
               Score: {myWins} – {theirWins}
             </p>
@@ -205,11 +207,6 @@ export function RacePlay() {
             <h2>
               {iWonMatch ? 'You won the race!' : theyWonMatch ? `${opponent?.name ?? 'Opponent'} won the race!` : 'Race over'}
             </h2>
-            {theyWonMatch && (
-              <p className="race-answer">
-                The matching symbol was <span className="race-answer__emoji">{matchEmoji}</span>
-              </p>
-            )}
             <p className="race-score-line">
               Final: {myWins} – {theirWins}
             </p>

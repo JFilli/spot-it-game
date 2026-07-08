@@ -8,11 +8,21 @@ interface GameCardProps {
   label: string
   selectedSlot: number | null
   wrongSlot: number | null
+  revealSlot?: number | null
   disabled: boolean
   onSymbolTap: (symbolId: string, slot: number) => void
 }
 
-export function GameCard({ card, gridSize, label, selectedSlot, wrongSlot, disabled, onSymbolTap }: GameCardProps) {
+export function GameCard({
+  card,
+  gridSize,
+  label,
+  selectedSlot,
+  wrongSlot,
+  revealSlot = null,
+  disabled,
+  onSymbolTap,
+}: GameCardProps) {
   const cellCount = symbolsPerCard(gridSize)
   const slots = Array.from({ length: cellCount }, (_, slot) => {
     const placement = card.placements.find((p) => p.slot === slot)
@@ -32,11 +42,12 @@ export function GameCard({ card, gridSize, label, selectedSlot, wrongSlot, disab
         {slots.map(({ slot, placement }) => {
           const isSelected = selectedSlot === slot
           const isWrong = wrongSlot === slot
+          const isReveal = revealSlot === slot
           return (
             <button
               key={slot}
               type="button"
-              className={`game-card__cell${isSelected ? ' game-card__cell--selected' : ''}${isWrong ? ' game-card__cell--wrong' : ''}`}
+              className={`game-card__cell${isSelected ? ' game-card__cell--selected' : ''}${isWrong ? ' game-card__cell--wrong' : ''}${isReveal ? ' game-card__cell--reveal' : ''}`}
               disabled={disabled || !placement}
               onClick={() => placement && onSymbolTap(placement.symbolId, slot)}
               aria-label={placement ? getSymbol(placement.symbolId).label : 'Empty'}
