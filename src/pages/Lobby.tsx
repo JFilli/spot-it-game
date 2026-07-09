@@ -11,6 +11,7 @@ import { loadSavedName, savePlayerName } from '../lib/playerName'
 import { gridSizeLabel } from '../game/types'
 import type { LobbyPlayer } from '../game/types'
 import { RoundBreakdown } from '../components/RoundBreakdown'
+import { RulesBlurb } from '../components/RulesBlurb'
 
 export function Lobby() {
   const { code } = useParams<{ code: string }>()
@@ -89,6 +90,7 @@ export function Lobby() {
     return (
       <div className="page lobby">
         <h1>Join Game</h1>
+        <RulesBlurb mode="time_trial" gridSize={room.gridSize} />
         <label className="field">
           Your name
           <input
@@ -130,6 +132,8 @@ export function Lobby() {
       )}
 
       <p className="lobby__grid-size">{gridSizeLabel(room.gridSize)} grid</p>
+
+      <RulesBlurb mode="time_trial" gridSize={room.gridSize} />
 
       <div className="lobby__share">
         <p>Invite friends with this link:</p>

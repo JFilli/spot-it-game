@@ -151,8 +151,16 @@ body {
   gap: 0.75rem;
 }
 
-.home__grid-header h2 {
+.home__grid-header h2,
+.home__solo-header h2 {
   margin: 0;
+}
+
+.home__solo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .home__leaderboard-btn {
@@ -161,10 +169,6 @@ body {
   padding: 0.5rem 0.9rem;
   font-size: 0.9rem;
   white-space: nowrap;
-}
-
-.home__leaderboard-btn--solo {
-  align-self: flex-start;
 }
 
 .grid-tabs {
@@ -577,6 +581,17 @@ body {
   text-align: center;
 }
 
+.lobby__rules {
+  background: var(--surface);
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1.25rem;
+}
+
+.lobby__rules-list {
+  margin-bottom: 0;
+}
+
 .lobby__link {
   display: block;
   word-break: break-all;
@@ -766,17 +781,6 @@ body {
   padding: 0.35rem;
 }
 
-.game-card__label {
-  text-align: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-
 .game-card__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -928,11 +932,6 @@ body {
     width: var(--play-card-size);
     max-width: var(--play-card-size);
     padding: 0.75rem;
-  }
-
-  .game-card__label {
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
   }
 
   .game-card__grid {

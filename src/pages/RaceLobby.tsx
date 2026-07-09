@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BackButton } from '../components/BackButton'
+import { RulesBlurb } from '../components/RulesBlurb'
 import { useGameRoom } from '../hooks/useGameRoom'
 import { bothPlayersReady, getRaceWins } from '../game/room'
 import { isSupabaseConfigured } from '../lib/supabase'
@@ -105,6 +106,7 @@ export function RaceLobby() {
       <div className="page lobby">
         <h1>Join Race</h1>
         <p className="lobby__waiting">1v1 best of {RACE_WINS_NEEDED * 2 - 1} · first to {RACE_WINS_NEEDED} wins</p>
+        <RulesBlurb mode="race" gridSize={room.gridSize} />
         <label className="field">
           Your name
           <input
@@ -137,6 +139,8 @@ export function RaceLobby() {
       <BackButton label="Title Screen" />
       <h1>1v1 Race</h1>
       <p className="lobby__grid-size">{gridSizeLabel(room.gridSize)} · Best of {RACE_WINS_NEEDED * 2 - 1}</p>
+
+      <RulesBlurb mode="race" gridSize={room.gridSize} />
 
       {!isSupabaseConfigured && (
         <p className="lobby__local-warning">

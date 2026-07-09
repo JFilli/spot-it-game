@@ -5,7 +5,6 @@ import { symbolsPerCard } from '../game/types'
 interface GameCardProps {
   card: CardData
   gridSize: GridSize
-  label: string
   selectedSlot: number | null
   wrongSlot: number | null
   revealSlot?: number | null
@@ -16,7 +15,6 @@ interface GameCardProps {
 export function GameCard({
   card,
   gridSize,
-  label,
   selectedSlot,
   wrongSlot,
   revealSlot = null,
@@ -31,7 +29,6 @@ export function GameCard({
 
   return (
     <div className={`game-card${gridSize >= 4 ? ` game-card--grid-${gridSize}` : ''}`}>
-      <div className="game-card__label">{label}</div>
       <div
         className="game-card__grid"
         style={{

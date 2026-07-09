@@ -91,7 +91,6 @@ export function RoundBoard({ round, gridSize, onComplete, active, startTime, rev
       <GameCard
         card={round.cardA}
         gridSize={gridSize}
-        label="Card A"
         selectedSlot={selectedA}
         wrongSlot={wrongA}
         revealSlot={revealA}
@@ -101,7 +100,6 @@ export function RoundBoard({ round, gridSize, onComplete, active, startTime, rev
       <GameCard
         card={round.cardB}
         gridSize={gridSize}
-        label="Card B"
         selectedSlot={selectedB}
         wrongSlot={wrongB}
         revealSlot={revealB}

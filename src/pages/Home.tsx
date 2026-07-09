@@ -186,18 +186,20 @@ export function Home() {
           >
             ← Back
           </button>
-          <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
-          <button
-            type="button"
-            className="btn btn--ghost home__leaderboard-btn home__leaderboard-btn--solo"
-            onClick={() =>
-              navigate(`/leaderboard?grid=${selectedGridSize}`, {
-                state: { from: 'solo', gridSize: selectedGridSize },
-              })
-            }
-          >
-            Leaderboard
-          </button>
+          <div className="home__solo-header">
+            <h2>Solo · {gridSizeLabel(selectedGridSize)}</h2>
+            <button
+              type="button"
+              className="btn btn--ghost home__leaderboard-btn"
+              onClick={() =>
+                navigate(`/leaderboard?grid=${selectedGridSize}`, {
+                  state: { from: 'solo', gridSize: selectedGridSize },
+                })
+              }
+            >
+              Leaderboard
+            </button>
+          </div>
           <section className="solo-bests">
             <h3 className="solo-bests__title">Personal Best</h3>
             <p className={`solo-bests__best${soloBest === null ? ' solo-bests__best--empty' : ''}`}>
